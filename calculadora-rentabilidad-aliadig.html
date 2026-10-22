@@ -181,6 +181,10 @@ button{font:inherit;cursor:pointer}
 .cushion p+p{margin-top:6px}
 .cushion .ck{font-weight:800;color:var(--ink);margin-bottom:6px;display:block}
 .cushion.ok{border-left:4px solid var(--brand)} .cushion.short{border-left:4px solid var(--loss)}
+.qty{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted)}
+.qty .in{width:96px;flex:none}
+.qty .in input{padding:9px 10px;font-size:16px}
+.qty input:disabled{opacity:.5}
 /* cards */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:18px 0;overflow:hidden}
 .card-head{display:flex;gap:14px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
@@ -375,8 +379,8 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
       <div class="card-body">
         <div class="fields">
           <div class="f"><label for="sOrders">Pedidos por día</label><div class="in"><input id="sOrders" inputmode="numeric"><span class="suf">pedidos</span></div></div>
-          <div class="f"><div class="slider-head"><label for="sCancel">Cancelaciones</label><output class="o-warn" id="sCancelOut"></output></div><input type="range" id="sCancel" min="0" max="60" step="1"><small>Pedidos que no se despachan</small></div>
-          <div class="f"><div class="slider-head"><label for="sReturn">Devoluciones</label><output class="o-loss" id="sReturnOut"></output></div><input type="range" class="r-loss" id="sReturn" min="0" max="60" step="1"><small>Despachados que el cliente no recibe</small></div>
+          <div class="f"><div class="slider-head"><label for="sCancel">Cancelaciones</label><output class="o-warn" id="sCancelOut"></output></div><div class="qty"><div class="in"><input type="number" id="sCancelN" min="0" step="1" inputmode="numeric" aria-label="Cantidad"></div><span id="sCancelNTxt"></span></div><input type="range" id="sCancel" min="0" max="100" step="0.1"><small>Pedidos que no se despachan</small></div>
+          <div class="f"><div class="slider-head"><label for="sReturn">Devoluciones</label><output class="o-loss" id="sReturnOut"></output></div><div class="qty"><div class="in"><input type="number" id="sReturnN" min="0" step="1" inputmode="numeric" aria-label="Cantidad"></div><span id="sReturnNTxt"></span></div><input type="range" class="r-loss" id="sReturn" min="0" max="100" step="0.1"><small>Despachados que el cliente no recibe</small></div>
         </div>
         <div class="hr"></div>
         <div class="funnel" id="funnelSim"></div>
@@ -427,8 +431,8 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
           <div class="f"><label for="rDays">Días de campaña</label><div class="in"><input id="rDays" inputmode="numeric" placeholder="7"></div><small>Duración del periodo</small></div>
         </div>
         <div class="fields two" style="margin-top:16px">
-          <div class="f"><div class="slider-head"><label for="rCancel">Cancelaciones</label><output class="o-warn" id="rCancelOut"></output></div><input type="range" id="rCancel" min="0" max="60" step="1"></div>
-          <div class="f"><div class="slider-head"><label for="rReturn">Devoluciones</label><output class="o-loss" id="rReturnOut"></output></div><input type="range" class="r-loss" id="rReturn" min="0" max="60" step="1"></div>
+          <div class="f"><div class="slider-head"><label for="rCancel">Cancelaciones</label><output class="o-warn" id="rCancelOut"></output></div><div class="qty"><div class="in"><input type="number" id="rCancelN" min="0" step="1" inputmode="numeric" aria-label="Cantidad"></div><span id="rCancelNTxt"></span></div><input type="range" id="rCancel" min="0" max="100" step="0.1"></div>
+          <div class="f"><div class="slider-head"><label for="rReturn">Devoluciones</label><output class="o-loss" id="rReturnOut"></output></div><div class="qty"><div class="in"><input type="number" id="rReturnN" min="0" step="1" inputmode="numeric" aria-label="Cantidad"></div><span id="rReturnNTxt"></span></div><input type="range" class="r-loss" id="rReturn" min="0" max="100" step="0.1"></div>
         </div>
       </div>
     </section>
@@ -564,6 +568,7 @@ function num(v){ v=String(v||"").trim(); if(!v) return 0; v=v.replace(/[^\d.,-]/
   else if(/^\d{1,3}(\.\d{3})+$/.test(v)) v=v.replace(/\./g,""); return parseFloat(v)||0; }
 function money(n){ const s=n<0?"-":""; return s+C.sym+" "+Math.abs(n).toLocaleString(C.loc,{minimumFractionDigits:C.dec,maximumFractionDigits:C.dec}); }
 function pct(n){ return (isFinite(n)?n:0).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"; }
+const fmtP = v => (Math.round(v*10)/10).toLocaleString("es-CO")+"%";
 const roundMoney = n => C.dec ? Math.round(n*100)/100 : Math.round(n);
 
 /* ---------- lógica ---------- */
@@ -632,7 +637,7 @@ function calcSim(){
   $("cushion").className = "cushion "+(okC?"ok":"short");
   $("cushion").innerHTML = `<span class="ck">Colchón del 10% para devoluciones</span>
     <p>A tu precio actual (${money(price)}), apartar el 10% de cada venta son <b>${money(roundMoney(cu.now))}</b>, que cubren hasta un <b>${pct(cu.covNow)}</b> de devoluciones. Tu margen después del colchón: <b>${pct(cu.marginAfter)}</b>.</p>
-    <p>${okC?`Las devoluciones que estás simulando (${rpNow}%) caben en el colchón.`:`Las devoluciones que estás simulando (${rpNow}%) superan el colchón: sube el precio hacia el recomendado.`} Al precio recomendado (${money(roundMoney(p.pOpt))}) el colchón cubre hasta un <b>${pct(cu.covOpt)}</b>.</p>`;
+    <p>${okC?`Las devoluciones que estás simulando (${fmtP(rpNow)}) caben en el colchón.`:`Las devoluciones que estás simulando (${fmtP(rpNow)}) superan el colchón: sube el precio hacia el recomendado.`} Al precio recomendado (${money(roundMoney(p.pOpt))}) el colchón cubre hasta un <b>${pct(cu.covOpt)}</b>.</p>`;
 
   // ofertas por cantidad
   const offers = qtyOffers(price,pcost,ship+fulf); // el pack paga un solo fulfillment y un solo flete
@@ -649,8 +654,9 @@ function calcSim(){
 
   const orders = Math.max(0,Math.round(num($("sOrders").value)));
   const cp=+$("sCancel").value, rp=+$("sReturn").value;
-  $("sCancelOut").textContent=cp+"%"; $("sReturnOut").textContent=rp+"%";
+  $("sCancelOut").textContent=fmtP(cp); $("sReturnOut").textContent=fmtP(rp);
   const f = funnelCalc(orders,price,cost,ship,cp,rp);
+  syncQty("s",f);
   renderFunnel($("funnelSim"),f);
   $("sGross").textContent=money(f.gross); $("sGrossD").textContent=pct(f.grossPctDeliv)+" sobre lo entregado";
   $("sLost").textContent=money(-f.lost); $("sLostD").textContent=`${f.returned} devoluciones × ${money(ship)}`;
@@ -691,15 +697,16 @@ function calcReal(){
   const price=num($("rPrice").value), pcost=num($("rCost").value), fulf=num($("rFulf").value), cost=pcost+fulf, ship=num($("rShip").value);
   const spend=num($("rSpend").value), orders=Math.round(num($("rOrders").value)), days=Math.round(num($("rDays").value));
   const cp=+$("rCancel").value, rp=+$("rReturn").value;
-  $("rCancelOut").textContent=cp+"%"; $("rReturnOut").textContent=rp+"%";
+  $("rCancelOut").textContent=fmtP(cp); $("rReturnOut").textContent=fmtP(rp);
   const miss=[]; if(!price)miss.push("Precio de venta"); if(!pcost)miss.push("Costo del producto"); if(!ship)miss.push("Flete promedio");
   if(!spend)miss.push("Inversión en pauta"); if(!orders)miss.push("Pedidos totales"); if(!days)miss.push("Días de campaña");
   $("rPending").hidden = !miss.length;
   $("rPending").innerHTML = "<b>Te falta completar:</b> "+miss.map(m=>`<span class="pill">${m}</span>`).join("");
   $("rResults").hidden = !!miss.length;
-  if(miss.length){ lastReal=null; return; }
+  if(miss.length){ lastReal=null; syncQty("r",funnelCalc(orders||0,price,cost,ship,cp,rp)); return; }
 
   const p=productCalc(price,cost,ship), f=funnelCalc(orders,price,cost,ship,cp,rp);
+  syncQty("r",f);
   const profit=f.real-spend, perDay=profit/days, month=perDay*30;
   const cpaReal=spend/orders, share=f.real>0?spend/f.real*100:Infinity;
   const roas=spend>0?f.delivSales/spend:0, cpaMax35=f.real*0.35/orders, cpaBreak=f.real/orders;
@@ -727,6 +734,23 @@ function calcReal(){
 }
 
 function calc(){ mode==="sim"?calcSim():calcReal(); }
+/* cantidades manuales: el usuario escribe cuántos pedidos y se calcula el % */
+function syncQty(k,f){
+  const c=$(k+"CancelN"), r=$(k+"ReturnN"), base=k==="s"?"pedidos":"pedidos totales";
+  $(k+"CancelNTxt").textContent = f.orders>0 ? `cancelados de ${f.orders} ${base}` : `escribe primero los ${base}`;
+  $(k+"ReturnNTxt").textContent = f.dispatched>0 ? `devueltos de ${f.dispatched} despachados` : `escribe primero los ${base}`;
+  c.disabled = !(f.orders>0); r.disabled = !(f.dispatched>0);
+  if(document.activeElement!==c) c.value = f.orders>0 ? f.cancelled : "";
+  if(document.activeElement!==r) r.value = f.dispatched>0 ? f.returned : "";
+}
+function qtyToPct(k,which){
+  const ordersEl=$(k==="s"?"sOrders":"rOrders"), orders=Math.max(0,Math.round(num(ordersEl.value)));
+  const n=Math.max(0,Math.round(num($(k+which+"N").value)));
+  if(which==="Cancel"){ if(!(orders>0)) return; $(k+"Cancel").value=Math.min(100,n/orders*100); }
+  else { const cp=+$(k+"Cancel").value, disp=orders-Math.round(orders*cp/100); if(!(disp>0)) return; $(k+"Return").value=Math.min(100,n/disp*100); }
+  calc();
+}
+["s","r"].forEach(k=>["Cancel","Return"].forEach(w=>$(k+w+"N").addEventListener("input",()=>qtyToPct(k,w))));
 
 /* ---------- PDF ---------- */
 function buildPdf(){
@@ -760,7 +784,7 @@ function buildPdf(){
     para("Diagnóstico: "+s.status+".");
     s.offers.forEach(o=>{ row(`Oferta ${o.q} unidades`,money(o.price),true); row(`   Precio por unidad (−${o.disc}%)`,money(roundMoney(o.each))); row(`   Margen del pack`,pct(o.margin)); });
     section("2. Simulación de ventas");
-    row("Cancelaciones",s.cp+"%"); row("Devoluciones",s.rp+"%"); funnel(s.f);
+    row("Cancelaciones",fmtP(s.cp)); row("Devoluciones",fmtP(s.rp)); funnel(s.f);
     row("Margen bruto de lo entregado",money(s.f.gross)); row("Fletes perdidos en devoluciones",money(-s.f.lost)); row("Margen bruto real",money(s.f.real),true);
     section("3. Presupuesto de pauta");
     s.budgets.forEach(b=>{ row(`${b.b}% del margen · presupuesto`,money(roundMoney(b.budget)),b.b===35); row(`   CPA máximo`,money(roundMoney(b.cpa))); row(`   Utilidad operacional`,money(roundMoney(b.op))); });
@@ -773,7 +797,7 @@ function buildPdf(){
     row("Margen bruto",pct(r.p.margin),true);
     section("2. Campaña");
     row("Inversión en pauta",money(r.spend)); row("Pedidos totales",r.orders); row("Días de campaña",r.days);
-    row("Cancelaciones",r.cp+"%"); row("Devoluciones",r.rp+"%"); funnel(r.f);
+    row("Cancelaciones",fmtP(r.cp)); row("Devoluciones",fmtP(r.rp)); funnel(r.f);
     section("3. Resultados");
     row("Margen bruto real",money(r.f.real)); row("CPA real",money(roundMoney(r.cpaReal))); row("CPA máximo sano (35%)",money(roundMoney(r.cpaMax35)));
     row("CPA de punto de equilibrio",money(roundMoney(r.cpaBreak))); row("Pauta sobre margen real",isFinite(r.share)?pct(r.share):"—"); row("ROAS real",r.roas.toFixed(2)+"x");
@@ -987,8 +1011,8 @@ function tutSlides(){
     F("Descuento por unidad = 1 − (precio del pack ÷ unidades) ÷ precio normal","Es el ahorro que ve el cliente")+
     `<p>Como el pack viaja en <b>un solo flete</b>, subes el ticket sin pagar más envío.</p>`},
   {k:"La lógica",t:"Cancelaciones y devoluciones",go:"funnelSim",h:
-    F("Cancelados = pedidos × % cancelaciones",`${f.orders} × ${s.cp}% = ${f.cancelled} → despachas ${f.dispatched}`)+
-    F("Devueltos = despachados × % devoluciones",`${f.dispatched} × ${s.rp}% = ${f.returned} → entregas ${f.delivered}`)+
+    F("Cancelados = pedidos × % cancelaciones",`${f.orders} × ${fmtP(s.cp)} = ${f.cancelled} → despachas ${f.dispatched}`)+
+    F("Devueltos = despachados × % devoluciones",`${f.dispatched} × ${fmtP(s.rp)} = ${f.returned} → entregas ${f.delivered}`)+
     `<p>Ojo: las devoluciones se calculan sobre lo <b>despachado</b>, no sobre el total. Los resultados se redondean a pedidos enteros.</p>`},
   {k:"La lógica",t:"Margen bruto real",go:"sReal",h:
     F("Margen bruto = entregados × ganancia por unidad",`${f.delivered} × ${money(s.p.unit)} = ${money(f.gross)}`)+
