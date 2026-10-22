@@ -77,6 +77,9 @@ button{font:inherit;cursor:pointer}
 .perk .benefit{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;color:var(--brand);line-height:1.15}
 .perk p{margin:0;color:var(--muted);font-size:14px;flex:1}
 .perk .btn{margin-top:6px}
+.perk-alt{display:block;text-align:center;font-size:13px;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;margin-top:2px}
+.perk-alt-note{display:block;text-align:center;font-size:12px;color:var(--muted)}
+.plat-alt{display:inline-block;font-size:12px;font-weight:700;color:var(--ink);text-decoration:underline;margin-top:2px}
 
 
 .perk-id{display:flex;align-items:center;gap:12px}
@@ -309,6 +312,8 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
         <div class="benefit">Cero cobro por uso</div>
         <p>Regístrate desde el enlace de Aliadig y usa Dropi sin pagar la comisión de la plataforma.</p>
         <a class="btn primary" href="https://app.dropi.co/aliadig" target="_blank" rel="noopener">Registrarme en Dropi</a>
+        <a class="perk-alt" href="https://cambio.micomunidaddropi.com/" target="_blank" rel="noopener">¿Ya tienes Dropi con otra comunidad? Cámbiate a Aliadig</a>
+        <span class="perk-alt-note">Busca la comunidad «Aliadig, tu aliado digital»</span>
       </article>
       <article class="perk">
         <span class="cat">Formulario de pedidos en Shopify</span>
@@ -808,6 +813,7 @@ function buildPdf(){
   para("Costo total (producto + flete) máximo 50% del precio de venta. Lo ideal es 40%, para un margen bruto del 60%. La pauta no debería superar el 35% del margen bruto real.");
   section("Beneficios de la comunidad Aliadig");
   row("Dropi · cero cobro por uso","app.dropi.co/aliadig");
+  row("¿Ya tienes Dropi? Cámbiate a Aliadig","cambio.micomunidaddropi.com");
   row("Releasit · +60 pedidos gratis (120 en total)","apps.shopify.com/releasit-cod-order-form");
   row("Dropkiller · 10% de descuento","dropkiller.com?fpr=991qwq");
   section("Mentoría en dropshipping y e-commerce");
@@ -888,7 +894,7 @@ function showRegOk(){ const r=getReg(), el=$("regOk"); if(!r){ el.hidden=true; r
   const b=document.createElement("button"); b.type="button"; b.textContent="No soy yo"; b.onclick=()=>{ regMem=null; try{localStorage.removeItem(REG_KEY);}catch(e){} showRegOk(); openReg("entry"); };
   el.append(t,b); }
 const PLATS=[
-  {id:"dropi",name:"Dropi",benefit:"Cero cobro por uso",url:"https://app.dropi.co/aliadig"},
+  {id:"dropi",name:"Dropi",benefit:"Cero cobro por uso",url:"https://app.dropi.co/aliadig",alt:"https://cambio.micomunidaddropi.com/",altTxt:"¿Ya tienes Dropi? Cámbiate a Aliadig"},
   {id:"releasit",name:"Releasit",benefit:"+60 pedidos gratis (120 en total)",url:"https://apps.shopify.com/releasit-cod-order-form?s=ref&ref=aliadig&locale=es"},
   {id:"dropkiller",name:"Dropkiller",benefit:"10% de descuento",url:"https://dropkiller.com?fpr=991qwq"}
 ];
@@ -896,7 +902,7 @@ function buildPlats(){
   $("regPlats").innerHTML=PLATS.map(p=>{
     const img=document.querySelector(`img[alt="Logo de ${p.name}"]`);
     return `<div class="plat" id="pl_${p.id}"><img src="${img?img.src:""}" alt="" width="38" height="38">
-      <div class="pi"><b>${p.name}</b><small>${p.benefit}</small></div>
+      <div class="pi"><b>${p.name}</b><small>${p.benefit}</small>${p.alt?`<br><a class="plat-alt" href="${p.alt}" target="_blank" rel="noopener" data-p="${p.id}">${p.altTxt}</a>`:""}</div>
       <a class="btn primary" href="${p.url}" target="_blank" rel="noopener" data-p="${p.id}">Registrarme</a>
       <label><input type="checkbox" data-c="${p.id}">Listo</label></div>`;}).join("");
   $("regPlats").querySelectorAll("a[data-p]").forEach(a=>a.addEventListener("click",()=>{ const c=$("regPlats").querySelector(`[data-c="${a.dataset.p}"]`); c.checked=true; syncPlats(); }));
@@ -1037,7 +1043,7 @@ function tutSlides(){
     <li>Recalcula cada semana: si sube la devolución, tu CPA máximo baja.</li>
     <li>Descarga el <b>PDF</b> y compártelo con tu socio o mentor para revisar juntos.</li></ul>`},
   {k:"Beneficios",t:"Tus beneficios como parte de Aliadig",go:"perks",h:`
-    <ul><li><b>Dropi:</b> cero cobro por uso de la plataforma.</li>
+    <ul><li><b>Dropi:</b> cero cobro por uso de la plataforma. Si ya tienes Dropi con otra comunidad, usa el enlace de cambio y busca «Aliadig, tu aliado digital».</li>
     <li><b>Releasit:</b> 60 pedidos gratis adicionales, 120 en total, en el formulario para Shopify.</li>
     <li><b>Dropkiller:</b> 10% de descuento en el plan que elijas para buscar productos ganadores.</li></ul>
     <p>Regístrate desde los botones de la sección de beneficios para que se apliquen. Para descargar el PDF necesitas tus datos y al menos un beneficio activado.</p>
