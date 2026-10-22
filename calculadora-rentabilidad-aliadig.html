@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de rentabilidad Aliadig</title>
+<meta property="og:title" content="Calculadora de rentabilidad Aliadig">
+<meta property="og:description" content="Calcula si tu producto contra entrega deja plata: margen, devoluciones, CPA máximo y utilidad. Un obsequio de la comunidad Aliadig.">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Calcula si tu producto contra entrega es rentable: margen bruto, cancelaciones, devoluciones, CPA máximo y utilidad operacional.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#E9EFEC;--surface:#FFFFFF;--ink:#18263A;--muted:#5B6878;--line:#D3DCD8;--field:#F3F6F5;
+  --brand:#0B7A5A;--brand-ink:#FFFFFF;--brand-soft:#D8F0E7;
+  --cta:#000000;--cta-ink:#FEF200;--accent:#FEF200;--loss:#C63D3D;--loss-soft:#F9E1DF;--warn:#A86A12;--warn-soft:#FBEFD6;--info:#2F5FA8;--info-soft:#E1EAF7;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1A17;--surface:#16231F;--ink:#E6EEEA;--muted:#9AAAA3;--line:#2A3A35;--field:#1C2B26;
+  --brand:#3CC997;--brand-ink:#08241A;--brand-soft:#173B2F;--loss:#F07B72;--loss-soft:#3D1F1E;
+  --warn:#E8B45A;--warn-soft:#3A2E17;--info:#7FA8EE;--info-soft:#1B2A44;--cta:#FEF200;--cta-ink:#000000;}}
+:root[data-theme="dark"]{
+  --bg:#0F1A17;--surface:#16231F;--ink:#E6EEEA;--muted:#9AAAA3;--line:#2A3A35;--field:#1C2B26;
+  --brand:#3CC997;--brand-ink:#08241A;--brand-soft:#173B2F;--loss:#F07B72;--loss-soft:#3D1F1E;
+  --warn:#E8B45A;--warn-soft:#3A2E17;--info:#7FA8EE;--info-soft:#1B2A44;--cta:#FEF200;--cta-ink:#000000;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Bricolage Grotesque","Figtree",system-ui,sans-serif;margin:0;line-height:1.1}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1040px;margin:0 auto;padding:0 18px}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+button{font:inherit;cursor:pointer}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--ink);text-decoration:none;margin-right:auto}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center}
+.logo small{display:block;font-family:"Figtree",sans-serif;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0}
+.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+.tabs button{border:0;background:transparent;color:var(--muted);font-weight:600;font-size:14px;padding:8px 14px;border-radius:9px}
+.tabs button[aria-selected="true"]{background:var(--brand);color:var(--brand-ink)}
+.ctl{display:flex;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.ctl select{border:0;background:transparent;color:var(--ink);font:600 14px "Figtree",sans-serif;padding:10px 12px;outline:none}
+.icon-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;color:var(--ink)}
+
+/* hero */
+.hero{padding:26px 0 22px;max-width:700px}
+.hero h1{font-size:clamp(32px,5.6vw,52px);font-weight:800;letter-spacing:-.035em}
+.hero p{font-size:17px;color:var(--muted);margin:12px 0 0;max-width:56ch}
+
+.banner{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.banner .t{flex:1;min-width:0}
+.banner b{display:block;font-size:15px}
+.banner span{color:var(--muted);font-size:13.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:10px 18px;font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.btn.primary{background:var(--cta);color:var(--cta-ink)}
+.btn.ghost{background:var(--field);color:var(--ink);border:1px solid var(--line)}
+.banner .ic{width:38px;height:38px;border-radius:10px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+@media (max-width:560px){.banner{flex-wrap:wrap}.banner .btn{width:100%}}
+
+
+/* beneficios */
+.gift{display:inline-flex;align-items:center;gap:8px;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:13.5px;border-radius:999px;padding:6px 14px;margin-bottom:14px}
+.perks{background:var(--surface);border:2px solid var(--cta);border-radius:20px;padding:20px;margin-bottom:18px}
+.perks-head h2{font-size:clamp(20px,3.4vw,26px);font-weight:800;letter-spacing:-.02em}
+.perks-head p{margin:6px 0 16px;color:var(--muted);font-size:14.5px}
+.perk-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:820px){.perk-grid{grid-template-columns:1fr}}
+.perk{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--field)}
+.perk .cat{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.perk h3{font-size:20px;font-weight:800}
+.perk .benefit{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;color:var(--brand);line-height:1.15}
+.perk p{margin:0;color:var(--muted);font-size:14px;flex:1}
+.perk .btn{margin-top:6px}
+
+
+.perk-id{display:flex;align-items:center;gap:12px}
+.perk-logo{width:48px;height:48px;border-radius:12px;object-fit:cover;background:#fff;border:1px solid var(--line);flex:none}
+/* tutorial */
+.tut{border:0;padding:0;border-radius:22px;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);background:var(--surface);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.tut::backdrop{background:rgba(10,20,17,.55)}
+.tut-in{display:flex;flex-direction:column;max-height:calc(100dvh - 32px)}
+.tut-top{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.tut-top b{flex:1;font-family:"Bricolage Grotesque",sans-serif;font-size:18px}
+.tut-x{border:0;background:var(--field);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1}
+.tut-chips{display:flex;gap:6px;padding:12px 18px 0;overflow-x:auto}
+.tut-chips button{border:1px solid var(--line);background:var(--field);color:var(--muted);font-weight:700;font-size:13px;border-radius:999px;padding:6px 12px;white-space:nowrap}
+.tut-chips button.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.tut-prog{height:4px;background:var(--line);margin:12px 18px 0;border-radius:4px;overflow:hidden}
+.tut-prog i{display:block;height:100%;background:var(--brand);transition:width .25s}
+.tut-body{padding:18px;overflow-y:auto;flex:1}
+.tut-body .kick{font-size:12px;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.08em}
+.tut-body h3{font-size:24px;font-weight:800;letter-spacing:-.02em;margin:4px 0 10px}
+.tut-body p{margin:0 0 12px;color:var(--muted);font-size:15px}
+.tut-body ul{margin:0 0 12px;padding-left:20px;color:var(--muted);font-size:15px}
+.tut-body li{margin-bottom:6px}
+.tut-body li b,.tut-body p b{color:var(--ink)}
+.formula{background:var(--field);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px;font-size:14.5px}
+.formula .f1{font-weight:700}
+.formula .f2{color:var(--brand);font-weight:800;font-variant-numeric:tabular-nums;margin-top:4px}
+.tipbox{background:var(--warn-soft);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:14.5px;margin-bottom:12px}
+.tut-foot{display:flex;gap:10px;align-items:center;padding:14px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.tut-foot .count{color:var(--muted);font-size:13px;margin-right:auto}
+.flash{animation:flash 1.6s ease 1}
+@keyframes flash{0%,100%{box-shadow:0 0 0 0 transparent}25%,60%{box-shadow:0 0 0 4px var(--brand)}}
+
+
+/* encabezado de marca */
+.top{background:#000;border-radius:0 0 20px 20px;padding:12px 16px;margin:0 -18px}
+.brand-logo{height:58px;width:auto;display:block}
+.top .tabs{background:#161616;border-color:#2c2c2c}
+.top .tabs button{color:#b9b9b9}
+.top .tabs button[aria-selected="true"]{background:#FEF200;color:#000}
+.top .ctl{background:#161616;border-color:#2c2c2c}
+.top .ctl select{color:#fff}
+.top .ctl select option{color:#000;background:#fff}
+.top .icon-btn{background:#161616;border-color:#2c2c2c;color:#fff}
+@media (max-width:560px){.brand-logo{height:48px}.top .tabs{order:3;width:100%}.top .tabs button{flex:1}}
+/* mentor */
+.mentor{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:center;background:#000;color:#fff;border-radius:22px;padding:24px;margin:18px 0}
+@media (max-width:760px){.mentor{grid-template-columns:1fr}}
+.mentor .tag{display:inline-block;background:#FEF200;color:#000;font-weight:800;font-size:12.5px;border-radius:999px;padding:4px 12px;margin-bottom:10px}
+.mentor h2{font-size:clamp(24px,4vw,32px);font-weight:800;letter-spacing:-.025em;color:#fff}
+.mentor p{color:#cfcfcf;margin:10px 0 0;font-size:15px;max-width:52ch}
+.mentor ul{margin:12px 0 0;padding-left:18px;color:#e6e6e6;font-size:14.5px}
+.mentor ul li{margin-bottom:4px}
+.mentor .who{background:#121212;border:1px solid #2a2a2a;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.mentor .who b{font-size:18px;font-family:"Bricolage Grotesque",sans-serif}
+.mentor .who span{color:#a9a9a9;font-size:13.5px}
+.mentor .btn{width:100%;white-space:normal;text-align:center}
+.btn.wa{background:#FEF200;color:#000}
+.btn.ig{background:transparent;color:#fff;border:1px solid #444}
+.wa-float{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;display:flex;align-items:center;gap:8px;background:#000;color:#FEF200;border:1px solid #333;border-radius:999px;padding:12px 16px;font-weight:800;font-size:14px;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+@media (max-width:560px){.wa-float span{display:none}.wa-float{padding:14px}}
+@media print{.wa-float,.mentor{display:none!important}}
+/* registro */
+.reg{border:0;padding:0;border-radius:22px;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 32px);background:var(--surface);color:var(--ink);box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.reg::backdrop{background:rgba(0,0,0,.6)}
+.reg form{display:flex;flex-direction:column;max-height:calc(100dvh - 32px)}
+.reg-head{background:#000;color:#fff;padding:18px 20px;display:flex;gap:12px;align-items:flex-start}
+.reg-head div{flex:1}
+.reg-head b{font-family:"Bricolage Grotesque",sans-serif;font-size:20px;display:block}
+.reg-head span{color:#cfcfcf;font-size:14px}
+.reg-head .tut-x{background:#1d1d1d;color:#fff}
+.reg-body{padding:18px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.reg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.reg-row{grid-template-columns:1fr}}
+.reg .in input{font-size:16px;font-weight:600}
+.ccwrap{position:relative;display:flex;align-items:center;align-self:stretch;border-right:1px solid var(--line);flex:none}
+.ccshow{padding:0 26px 0 12px!important;color:var(--ink)!important;font-weight:700;white-space:nowrap;position:relative}
+.ccshow::after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.ccwrap select{position:absolute;inset:0;width:100%;opacity:0;cursor:pointer;font-size:16px}
+.ccwrap:focus-within{outline:3px solid var(--brand);outline-offset:-3px;border-radius:12px 0 0 12px}
+.reg h4{margin:4px 0 0;font-size:15px}
+.reg .hint{color:var(--muted);font-size:13px;margin:-8px 0 0}
+.plat{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px}
+.plat.on{border-color:var(--brand);background:var(--brand-soft)}
+.plat img{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);flex:none}
+.plat .pi{flex:1;min-width:0}
+.plat .pi b{display:block;font-size:14.5px}
+.plat .pi small{color:var(--muted);font-size:12.5px}
+.plat .btn{padding:8px 12px;font-size:13px}
+.plat label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap;cursor:pointer}
+.plat input[type=checkbox],.consent input{width:18px;height:18px;accent-color:var(--brand);flex:none}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
+@media (max-width:480px){.plat{flex-wrap:wrap}.plat .pi{flex:1 1 calc(100% - 52px)}.plat .btn{flex:1}}
+.err{color:var(--loss);font-size:13px;font-weight:700;min-height:1em}
+.reg-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.reg-foot .btn{width:100%}
+.reg-ok{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);margin-top:6px}
+.reg-ok button{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;font-size:13.5px}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:18px 0;overflow:hidden}
+.card-head{display:flex;gap:14px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
+.step-num{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;color:var(--cta-ink);background:var(--cta);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;flex:none}
+.card-head h2{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.card-head p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.card-body{padding:22px}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:720px){.fields,.fields.two{grid-template-columns:1fr}}
+.f{display:flex;flex-direction:column;gap:6px}
+.f label{font-weight:700;font-size:14px}
+.f small{color:var(--muted);font-size:12.5px}
+.in{display:flex;align-items:center;background:var(--field);border:1.5px solid var(--line);border-radius:12px}
+.in:focus-within{border-color:var(--brand)}
+.in span{padding-left:12px;color:var(--muted);font-weight:600}
+.in span.suf{padding:0 12px 0 0}
+.in input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:700 17px/1 "Figtree",sans-serif;padding:13px 12px;font-variant-numeric:tabular-nums;outline:none}
+.in input::placeholder{color:var(--muted);font-weight:500;opacity:.7}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline}
+.slider-head output{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:20px}
+input[type=range]{width:100%;accent-color:var(--brand)}
+input.r-loss{accent-color:var(--loss)}
+.o-warn{color:var(--warn)} .o-loss{color:var(--loss)}
+
+/* result blocks */
+.hr{height:1px;background:var(--line);margin:22px 0}
+.margin-box{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;border-radius:16px;padding:18px 20px;border:1.5px solid var(--line)}
+.margin-box .lbl{font-weight:700;font-size:14px;color:var(--muted)}
+.margin-box .big{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:clamp(40px,7vw,56px);letter-spacing:-.03em;line-height:1;margin:6px 0}
+.margin-box .st{font-weight:700}
+.margin-box .side{text-align:right;color:var(--muted);font-size:14.5px}
+.margin-box .side b{color:var(--ink)}
+.s-good{background:var(--brand-soft);border-color:transparent}.s-good .big,.s-good .st{color:var(--brand)}
+.s-ok{background:var(--info-soft);border-color:transparent}.s-ok .big,.s-ok .st{color:var(--info)}
+.s-warn{background:var(--warn-soft);border-color:transparent}.s-warn .big,.s-warn .st{color:var(--warn)}
+.s-bad{background:var(--loss-soft);border-color:transparent}.s-bad .big,.s-bad .st{color:var(--loss)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.tile{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--surface)}
+.tile .k{font-size:13.5px;font-weight:700;color:var(--muted)}
+.tile .v{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:24px;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.tile .d{font-size:13px;color:var(--muted)}
+.tile.good .v{color:var(--brand)} .tile.bad .v{color:var(--loss)} .tile.warn .v{color:var(--warn)} .tile.info .v{color:var(--info)}
+.tile.pick{border:2px solid var(--brand)}
+.badge{display:inline-block;font-size:11.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--brand);color:var(--brand-ink);margin-left:6px;vertical-align:2px}
+details.offers{margin-top:16px}
+details.offers summary{cursor:pointer;font-weight:700;color:var(--brand);font-size:15px}
+.offer-note{color:var(--muted);font-size:13px;margin:10px 0 0}
+
+/* funnel */
+.funnel{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.stage{position:relative;border-radius:14px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;overflow:hidden;border:1px solid var(--line)}
+.stage .fill{position:absolute;inset:0 auto 0 0;opacity:.9;z-index:0;transition:width .3s}
+.stage > *:not(.fill){position:relative;z-index:1}
+.stage .n{font-weight:700;font-size:13.5px;color:var(--muted)}
+.stage .c{font-weight:700;font-size:17px}
+.stage .m{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;text-align:right;font-variant-numeric:tabular-nums}
+.stage .m small{display:block;font-family:"Figtree",sans-serif;font-weight:600;font-size:12px;color:var(--muted)}
+.st-total .fill{background:var(--info-soft)} .st-total .m{color:var(--info)}
+.st-disp .fill{background:var(--warn-soft)} .st-disp .m{color:var(--warn)}
+.st-deliv .fill{background:var(--brand-soft)} .st-deliv .m{color:var(--brand)}
+.drop{align-self:center;font-size:13px;font-weight:700;padding:3px 12px;border-radius:999px}
+.drop.c{background:var(--warn-soft);color:var(--warn)} .drop.d{background:var(--loss-soft);color:var(--loss)}
+
+.summary{background:var(--field);border-radius:14px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14.5px}
+.summary b{font-variant-numeric:tabular-nums}
+.sec-title{font-weight:800;font-size:15px;margin:20px 0 4px}
+.sec-sub{color:var(--muted);font-size:13.5px;margin:0 0 10px}
+.split{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.verdict{border-radius:14px;padding:14px 16px;margin-top:14px;font-weight:600}
+.pending{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:12px 16px;font-size:14px}
+.pending b{color:var(--muted)}
+.pill{background:var(--warn-soft);color:var(--warn);font-weight:700;border-radius:999px;padding:3px 12px;font-size:13px}
+.linkish{background:none;border:0;padding:0;color:var(--brand);font-weight:700;font-size:14px;margin-top:8px}
+
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.rules h3{font-size:17px;margin-bottom:4px}
+.rules p{margin:0;color:var(--muted);font-size:14.5px}
+.pdf-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between;background:#000;color:#fff;border:1px solid #2a2a2a;border-radius:18px;padding:16px 20px;margin:18px 0}
+.pdf-bar b{font-size:16px}
+.pdf-bar span{opacity:.75;font-size:13.5px;display:block}
+.pdf-bar .btn{background:#FEF200;color:#000}
+#pdfMsg{font-size:13px;margin-top:4px}
+footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
+[hidden]{display:none!important}
+@media print{.top,.banner,.pdf-bar,.tabs,footer{display:none!important}body{background:#fff}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#" aria-label="Aliadig, tu aliado digital">
+      <img class="brand-logo" id="brandLogo" src="data:image/jpeg;base64,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" alt="Aliadig, tu aliado digital" width="440" height="183">
+    </a>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabSim" aria-selected="true">Simular</button>
+      <button role="tab" id="tabReal" aria-selected="false">Mis números reales</button>
+    </div>
+    <div class="ctl"><select id="country" aria-label="País"></select></div>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </header>
+
+  <section class="hero">
+    <span class="gift">🎁 Calculadora de rentabilidad Aliadig · Obsequio para la comunidad</span>
+    <h1 id="heroTitle">Antes de pautar, mira si el producto te deja plata</h1>
+    <p id="heroSub">Pon tus costos, simula cancelaciones y devoluciones, y descubre cuánto puedes pagar por pedido en publicidad.</p>
+  </section>
+
+
+  <section class="perks" id="perks" aria-labelledby="perksTitle">
+    <div class="perks-head">
+      <h2 id="perksTitle">Beneficios exclusivos por ser parte de Aliadig</h2>
+      <p>Además de la calculadora, como miembro de la comunidad tienes acceso a estas ventajas en las herramientas que vas a usar todos los días.</p>
+    </div>
+    <div class="perk-grid">
+      <article class="perk">
+        <span class="cat">Proveedor y logística</span>
+        <div class="perk-id"><img class="perk-logo" src="data:image/jpeg;base64,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" alt="Logo de Dropi" width="48" height="48"><h3>Dropi</h3></div>
+        <div class="benefit">Cero cobro por uso</div>
+        <p>Regístrate desde el enlace de Aliadig y usa Dropi sin pagar la comisión de la plataforma.</p>
+        <a class="btn primary" href="https://app.dropi.co/aliadig" target="_blank" rel="noopener">Registrarme en Dropi</a>
+      </article>
+      <article class="perk">
+        <span class="cat">Formulario de pedidos en Shopify</span>
+        <div class="perk-id"><img class="perk-logo" src="data:image/jpeg;base64,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" alt="Logo de Releasit" width="48" height="48"><h3>Releasit</h3></div>
+        <div class="benefit">+60 pedidos gratis</div>
+        <p>Normalmente empiezas con 60 pedidos gratis. Con el enlace de Aliadig recibes 60 más: 120 en total.</p>
+        <a class="btn primary" href="https://apps.shopify.com/releasit-cod-order-form?s=ref&ref=aliadig&locale=es" target="_blank" rel="noopener">Instalar Releasit</a>
+      </article>
+      <article class="perk">
+        <span class="cat">Búsqueda de productos ganadores</span>
+        <div class="perk-id"><img class="perk-logo" src="data:image/jpeg;base64,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" alt="Logo de Dropkiller" width="48" height="48"><h3>Dropkiller</h3></div>
+        <div class="benefit">10% de descuento</div>
+        <p>Obtén 10% de descuento en el plan que elijas para encontrar productos y espiar a la competencia.</p>
+        <a class="btn primary" href="https://dropkiller.com?fpr=991qwq" target="_blank" rel="noopener">Obtener descuento</a>
+      </article>
+    </div>
+  </section>
+
+  <div class="banner">
+    <span class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+    <div class="t"><b>¿Quieres que revisemos tu producto contigo?</b><span>Escríbele a Leonel Mercado, mentor de Aliadig, por WhatsApp.</span></div>
+    <a class="btn primary" id="lnkAgenda" href="#" target="_blank" rel="noopener">Hablar con Leonel</a>
+  </div>
+  <div class="banner">
+    <span class="ic" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+    <div class="t"><b>¿Primera vez usándola?</b><span>Tutorial interactivo: cómo usarla, de dónde sale cada número y recomendaciones.</span></div>
+    <button class="btn ghost" id="openTut" type="button">Ver tutorial</button>
+  </div>
+
+  <!-- ================= MODO SIMULAR ================= -->
+  <div id="modeSim">
+    <section class="card">
+      <div class="card-head"><span class="step-num">1</span><div><h2>Costos del producto</h2><p>Proveedor, envío y precio al cliente</p></div></div>
+      <div class="card-body">
+        <div class="fields">
+          <div class="f"><label for="sCost">Costo del producto</label><div class="in"><span class="cur">$</span><input id="sCost" inputmode="decimal"></div><small>Lo que te cobra el proveedor</small></div>
+          <div class="f"><label for="sShip">Flete promedio</label><div class="in"><span class="cur">$</span><input id="sShip" inputmode="decimal"></div><small class="shipHint"></small></div>
+          <div class="f"><label for="sPrice">Precio de venta</label><div class="in"><span class="cur">$</span><input id="sPrice" inputmode="decimal"></div><small>Lo que paga tu cliente</small></div>
+        </div>
+        <div class="hr"></div>
+        <div class="margin-box" id="mBox">
+          <div>
+            <div class="lbl">Margen bruto</div>
+            <div class="big num" id="mPct"></div>
+            <div class="st" id="mStatus"></div>
+          </div>
+          <div class="side">
+            <div>Costo total: <b class="num" id="mTotal"></b></div>
+            <div>Ganancia por unidad: <b class="num" id="mUnit"></b></div>
+          </div>
+        </div>
+        <div class="tiles">
+          <div class="tile"><div class="k">Precio mínimo (margen 50%)</div><div class="v" id="pMin"></div><div class="d">Por debajo de esto el margen queda corto</div></div>
+          <div class="tile good"><div class="k">Precio recomendado (margen 60%)</div><div class="v" id="pOpt"></div><div class="d">El punto sano para pautar con aire</div></div>
+        </div>
+        <details class="offers">
+          <summary>Ver ofertas por cantidad sugeridas</summary>
+          <div class="tiles" id="offers"></div>
+          <p class="offer-note">Pack de 2 a 1,5 veces el precio y pack de 3 a 1,8 veces, redondeados a un precio comercial. Se envían en un solo flete.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><span class="step-num">2</span><div><h2>Simulación de ventas</h2><p>Qué pasa con tus pedidos después de las cancelaciones y devoluciones</p></div></div>
+      <div class="card-body">
+        <div class="fields">
+          <div class="f"><label for="sOrders">Pedidos por día</label><div class="in"><input id="sOrders" inputmode="numeric"><span class="suf">pedidos</span></div></div>
+          <div class="f"><div class="slider-head"><label for="sCancel">Cancelaciones</label><output class="o-warn" id="sCancelOut"></output></div><input type="range" id="sCancel" min="0" max="60" step="1"><small>Pedidos que no se despachan</small></div>
+          <div class="f"><div class="slider-head"><label for="sReturn">Devoluciones</label><output class="o-loss" id="sReturnOut"></output></div><input type="range" class="r-loss" id="sReturn" min="0" max="60" step="1"><small>Despachados que el cliente no recibe</small></div>
+        </div>
+        <div class="hr"></div>
+        <div class="funnel" id="funnelSim"></div>
+        <div class="tiles">
+          <div class="tile warn"><div class="k">Margen bruto de lo entregado</div><div class="v" id="sGross"></div><div class="d" id="sGrossD"></div></div>
+          <div class="tile bad"><div class="k">Fletes perdidos en devoluciones</div><div class="v" id="sLost"></div><div class="d" id="sLostD"></div></div>
+          <div class="tile good"><div class="k">Margen bruto real</div><div class="v" id="sReal"></div><div class="d">Margen bruto menos fletes perdidos</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><span class="step-num">3</span><div><h2>Presupuesto de pauta</h2><p>CPA máximo y utilidad operacional</p></div></div>
+      <div class="card-body">
+        <div class="summary" id="sSummary"></div>
+        <div class="sec-title">Cuánto del margen real puedes invertir en publicidad</div>
+        <p class="sec-sub">Tres escenarios sobre tu margen bruto real. El 35% es el más sano.</p>
+        <div class="tiles" id="budgetTiles"></div>
+        <div class="hr"></div>
+        <div class="fields two">
+          <div class="f"><label for="sCpa">Tu CPA actual</label><div class="in"><span class="cur">$</span><input id="sCpa" inputmode="decimal" placeholder="Ej: 8000"></div><small>Costo por pedido en tu plataforma de anuncios</small>
+            <button class="linkish" id="goReal" type="button">¿Ya tienes datos de una campaña? Usa "Mis números reales"</button></div>
+          <div id="cpaResult"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= MODO REAL ================= -->
+  <div id="modeReal" hidden>
+    <section class="card">
+      <div class="card-head"><span class="step-num">1</span><div><h2>Tu producto</h2><p>Precio, costo y flete</p></div></div>
+      <div class="card-body">
+        <div class="fields">
+          <div class="f"><label for="rPrice">Precio de venta</label><div class="in"><span class="cur">$</span><input id="rPrice" inputmode="decimal"></div></div>
+          <div class="f"><label for="rCost">Costo del producto</label><div class="in"><span class="cur">$</span><input id="rCost" inputmode="decimal"></div></div>
+          <div class="f"><label for="rShip">Flete promedio</label><div class="in"><span class="cur">$</span><input id="rShip" inputmode="decimal"></div><small class="shipHint"></small></div>
+        </div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-head"><span class="step-num">2</span><div><h2>Tu campaña</h2><p>Lo que invertiste, los pedidos que entraron y en cuántos días</p></div></div>
+      <div class="card-body">
+        <div class="fields">
+          <div class="f"><label for="rSpend">Inversión en pauta</label><div class="in"><span class="cur">$</span><input id="rSpend" inputmode="decimal" placeholder="200000"></div><small>Total gastado en ese periodo</small></div>
+          <div class="f"><label for="rOrders">Pedidos totales</label><div class="in"><input id="rOrders" inputmode="numeric" placeholder="25"></div><small>Pedidos recibidos en ese periodo</small></div>
+          <div class="f"><label for="rDays">Días de campaña</label><div class="in"><input id="rDays" inputmode="numeric" placeholder="7"></div><small>Duración del periodo</small></div>
+        </div>
+        <div class="fields two" style="margin-top:16px">
+          <div class="f"><div class="slider-head"><label for="rCancel">Cancelaciones</label><output class="o-warn" id="rCancelOut"></output></div><input type="range" id="rCancel" min="0" max="60" step="1"></div>
+          <div class="f"><div class="slider-head"><label for="rReturn">Devoluciones</label><output class="o-loss" id="rReturnOut"></output></div><input type="range" class="r-loss" id="rReturn" min="0" max="60" step="1"></div>
+        </div>
+      </div>
+    </section>
+    <div class="pending" id="rPending"></div>
+    <section class="card" id="rResults" hidden>
+      <div class="card-head"><span class="step-num">3</span><div><h2>Tu rentabilidad real</h2><p>Lo que de verdad te quedó</p></div></div>
+      <div class="card-body">
+        <div class="margin-box" id="rBox">
+          <div><div class="lbl">Utilidad operacional del periodo</div><div class="big num" id="rProfit"></div><div class="st" id="rStatus"></div></div>
+          <div class="side"><div>Por día: <b class="num" id="rDay"></b></div><div>Proyección 30 días: <b class="num" id="rMonth"></b></div></div>
+        </div>
+        <div class="funnel" id="funnelReal" style="margin-top:14px"></div>
+        <div class="tiles" id="rTiles"></div>
+        <div class="verdict" id="rVerdict"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="pdf-bar">
+    <div><b>Descarga tu análisis en PDF</b><span>Regístrate una sola vez y activa al menos un beneficio para descargarlo.</span><div id="pdfMsg"></div><div class="reg-ok" id="regOk" hidden></div></div>
+    <button class="btn" id="pdfBtn" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Descargar PDF</button>
+  </div>
+
+  <section class="mentor" id="mentoria" aria-labelledby="mentorTitle">
+    <div>
+      <span class="tag">Mentoría Aliadig</span>
+      <h2 id="mentorTitle">¿Te fue útil? Aprende dropshipping y e-commerce con acompañamiento</h2>
+      <p>La calculadora te dice si un producto deja plata. En la mentoría aprendes a encontrarlo, montarlo y escalarlo.</p>
+      <ul>
+        <li>Búsqueda y validación de productos ganadores</li>
+        <li>Tienda en Shopify y formulario contra entrega</li>
+        <li>Pauta en Meta y lectura de tus números</li>
+        <li>Logística, confirmación de pedidos y devoluciones</li>
+      </ul>
+    </div>
+    <div class="who">
+      <b>Leonel Mercado</b>
+      <span>Mentor de dropshipping y e-commerce · Aliadig</span>
+      <a class="btn wa" id="lnkCurso" href="#" target="_blank" rel="noopener">Quiero mi entrenamiento para hacer dropshipping y e-commerce</a>
+      <a class="btn ig" id="lnkIg" href="#" target="_blank" rel="noopener">Ver Instagram @leomergbusiness</a>
+    </div>
+  </section>
+
+  <section class="card"><div class="card-body">
+    <h2 style="font-size:20px;margin-bottom:14px">Tres números para no perder plata</h2>
+    <div class="rules">
+      <div><h3>Costo total ≤ 50% del precio</h3><p>Producto más flete nunca deberían superar la mitad de lo que cobras.</p></div>
+      <div><h3>Lo ideal: costo en 40%</h3><p>Así tu margen bruto llega al 60% y tienes espacio para pautar y absorber devoluciones.</p></div>
+      <div><h3>Pauta ≤ 35% del margen real</h3><p>Lo que gastas en anuncios no debería pasar del 35% de tu margen después de devoluciones.</p></div>
+    </div>
+  </div></section>
+
+  <footer>© <span id="yr"></span> Aliadig. Resultados estimados con los datos que ingresas.</footer>
+</div>
+
+
+<dialog class="tut" id="tut" aria-labelledby="tutTitle">
+  <div class="tut-in">
+    <div class="tut-top"><b id="tutTitle">Tutorial de la calculadora</b><button class="tut-x" id="tutClose" aria-label="Cerrar">×</button></div>
+    <div class="tut-chips" id="tutChips"></div>
+    <div class="tut-prog"><i id="tutBar"></i></div>
+    <div class="tut-body" id="tutBody"></div>
+    <div class="tut-foot">
+      <span class="count" id="tutCount"></span>
+      <button class="btn ghost" id="tutPrev" type="button">Anterior</button>
+      <button class="btn primary" id="tutNext" type="button">Siguiente</button>
+    </div>
+  </div>
+</dialog>
+
+<a class="wa-float" id="waFloat" href="#" target="_blank" rel="noopener" aria-label="Escribir a Leonel por WhatsApp">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.2z"/></svg>
+  <span>Habla con Leonel</span>
+</a>
+
+<dialog class="reg" id="reg" aria-labelledby="regTitle">
+  <form id="regForm" novalidate>
+    <div class="reg-head">
+      <div><b id="regTitle">Descarga tu PDF gratis</b><span id="regSub">Déjanos tus datos y activa al menos uno de tus beneficios de la comunidad Aliadig.</span></div>
+      <button type="button" class="tut-x" id="regClose" aria-label="Cerrar">×</button>
+    </div>
+    <div class="reg-body">
+      <div id="regContact" style="display:flex;flex-direction:column;gap:14px">
+      <div class="reg-row">
+        <div class="f"><label for="rgNombre">Nombre</label><div class="in"><input id="rgNombre" autocomplete="given-name" required></div></div>
+        <div class="f"><label for="rgApellido">Apellido</label><div class="in"><input id="rgApellido" autocomplete="family-name" required></div></div>
+      </div>
+      <div class="f"><label for="rgEmail">Correo electrónico</label><div class="in"><input id="rgEmail" type="email" autocomplete="email" inputmode="email" required></div></div>
+      <div class="f"><label for="rgTel">WhatsApp</label><div class="in"><span class="ccwrap"><span class="ccshow" id="rgCcShow" aria-hidden="true">🇨🇴 +57</span><select id="rgCc" aria-label="Indicativo del país"></select></span><input id="rgTel" type="tel" autocomplete="tel-national" inputmode="tel" placeholder="300 123 4567" required></div></div>
+      <label class="consent"><input type="checkbox" id="rgConsent"><span>Autorizo a Aliadig a usar mis datos para enviarme información de la comunidad y la mentoría, según la Ley 1581 de 2012 de protección de datos.</span></label>
+      </div>
+      <div id="regBenefits" style="display:flex;flex-direction:column;gap:14px">
+      <h4>Activa al menos un beneficio</h4>
+      <p class="hint">Regístrate desde estos enlaces para recibir el beneficio. Si ya lo hiciste, marca la casilla.</p>
+      <div id="regPlats" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="err" id="regErr" role="alert"></div>
+    </div>
+    <div class="reg-foot"><button class="btn primary" type="submit" id="regSubmit">Registrarme y descargar PDF</button></div>
+  </form>
+</dialog>
+<script>
+/* === Configura aquí tus enlaces === */
+const CONFIG = {
+  mentorName: "Leonel Mercado",
+  whatsapp: "573163473137",                                  // número del mentor, sin + ni espacios
+  instagram: "https://www.instagram.com/leomergbusiness/",
+  videoUrl: "#",                                              // opcional: enlace a un video tutorial
+  leadsUrl: "",                                              // URL del Google Apps Script que guarda los registros (ver LEEME)
+  gateSeconds: 40                                             // segundos de uso libre antes de pedir el registro
+};
+const wa = t => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(t)}`;
+CONFIG.agendaUrl = wa("Hola Leonel, vengo de la calculadora Aliadig y quiero que revisemos mi producto.");
+CONFIG.cursoUrl  = wa("Hola Leonel, vengo de la calculadora Aliadig y quiero mi entrenamiento para hacer dropshipping y e-commerce.");
+
+const COUNTRIES = {
+  CO:{code:"57",name:"Colombia",flag:"🇨🇴",sym:"$",loc:"es-CO",dec:0,hint:"Aprox. $18.000 a $20.000",d:{cost:23000,ship:18000,price:81900}},
+  EC:{code:"593",name:"Ecuador",flag:"🇪🇨",sym:"$",loc:"es-EC",dec:2,hint:"Aprox. $5 a $7",d:{cost:8,ship:5.5,price:29.9}},
+  MX:{code:"52",name:"México",flag:"🇲🇽",sym:"$",loc:"es-MX",dec:0,hint:"Aprox. $100 a $150",d:{cost:150,ship:110,price:549}},
+  PE:{code:"51",name:"Perú",flag:"🇵🇪",sym:"S/",loc:"es-PE",dec:2,hint:"Aprox. S/ 12 a S/ 18",d:{cost:30,ship:15,price:99}},
+  CL:{code:"56",name:"Chile",flag:"🇨🇱",sym:"$",loc:"es-CL",dec:0,hint:"Aprox. $4.000 a $6.000",d:{cost:7000,ship:4500,price:24990}},
+  GT:{code:"502",name:"Guatemala",flag:"🇬🇹",sym:"Q",loc:"es-GT",dec:2,hint:"Aprox. Q30 a Q40",d:{cost:70,ship:35,price:229}},
+  PA:{code:"507",name:"Panamá",flag:"🇵🇦",sym:"$",loc:"es-PA",dec:2,hint:"Aprox. $5 a $7",d:{cost:8,ship:6,price:29.9}},
+  ES:{code:"34",name:"España",flag:"🇪🇸",sym:"€",loc:"es-ES",dec:2,hint:"Aprox. 5 € a 7 €",d:{cost:8,ship:6,price:29.9}}
+};
+const $ = id => document.getElementById(id);
+let C = COUNTRIES.CO, mode = "sim";
+
+function num(v){ v=String(v||"").trim(); if(!v) return 0; v=v.replace(/[^\d.,-]/g,"");
+  if(v.includes(",")&&v.includes(".")) v=v.replace(/\./g,"").replace(",","."); else if(v.includes(",")) v=v.replace(",",".");
+  else if(/^\d{1,3}(\.\d{3})+$/.test(v)) v=v.replace(/\./g,""); return parseFloat(v)||0; }
+function money(n){ const s=n<0?"-":""; return s+C.sym+" "+Math.abs(n).toLocaleString(C.loc,{minimumFractionDigits:C.dec,maximumFractionDigits:C.dec}); }
+function pct(n){ return (isFinite(n)?n:0).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%"; }
+const roundMoney = n => C.dec ? Math.round(n*100)/100 : Math.round(n);
+
+/* ---------- lógica ---------- */
+function productCalc(price,cost,ship){
+  const total = cost+ship, unit = price-total, margin = price>0 ? unit/price*100 : 0;
+  return { total, unit, margin, pMin: total/0.5, pOpt: total/0.4 };
+}
+function marginStatus(m){
+  if(m>=60) return ["s-good","Excelente, tienes buen espacio para pautar"];
+  if(m>=50) return ["s-ok","Aceptable, aunque podrías cobrar un poco más"];
+  if(m>=40) return ["s-warn","Ajustado, conviene subir el precio"];
+  return ["s-bad","Riesgoso, con este margen es muy difícil ganar"];
+}
+function funnelCalc(orders,price,cost,ship,cancelPct,returnPct){
+  const cancelled = Math.round(orders*cancelPct/100);
+  const dispatched = orders - cancelled;
+  const returned = Math.round(dispatched*returnPct/100);
+  const delivered = dispatched - returned;
+  const unit = price - cost - ship;
+  const gross = delivered*unit;
+  const lost = returned*ship;
+  return { orders,cancelled,dispatched,returned,delivered,
+    sales: orders*price, dispSales: dispatched*price, delivSales: delivered*price,
+    gross, lost, real: gross-lost, grossPctDeliv: price>0?unit/price*100:0 };
+}
+function renderFunnel(el,f){
+  const w = n => f.orders>0 ? Math.max(8,n/f.orders*100) : 8;
+  const share = n => f.orders>0 ? Math.round(n/f.orders*100)+"% del total" : "";
+  el.innerHTML = `
+  <div class="stage st-total"><div class="fill" style="width:100%"></div><div><div class="n">Pedidos generados</div><div class="c num">${f.orders} pedidos</div></div><div class="m">${money(f.sales)}</div></div>
+  <span class="drop c">−${f.cancelled} cancelados</span>
+  <div class="stage st-disp"><div class="fill" style="width:${w(f.dispatched)}%"></div><div><div class="n">Despachados</div><div class="c num">${f.dispatched} pedidos</div></div><div class="m">${money(f.dispSales)}<small>${share(f.dispatched)}</small></div></div>
+  <span class="drop d">−${f.returned} devueltos</span>
+  <div class="stage st-deliv"><div class="fill" style="width:${w(f.delivered)}%"></div><div><div class="n">Entregados y pagados</div><div class="c num">${f.delivered} pedidos</div></div><div class="m">${money(f.delivSales)}<small>${share(f.delivered)}</small></div></div>`;
+}
+function nicePrice(v){ // redondea al precio comercial más cercano (ej. 122.850 → 119.900)
+  if(v<=0) return 0;
+  const step = Math.pow(10, Math.floor(Math.log10(v))-1);
+  const minUnit = C.dec ? 0.01 : 1;
+  const ending = Math.max(step/100, minUnit);
+  const r = Math.round(v/step)*step - ending;
+  return C.dec ? Math.round(r*100)/100 : Math.round(r);
+}
+function qtyOffers(price,cost,ship){ // 2 unidades = 1,5× precio · 3 unidades = 1,8× precio
+  return [[2,1.5],[3,1.8]].map(([q,mult])=>{
+    const offer = nicePrice(price*mult), each = offer/q, pcost = q*cost+ship;
+    return { q, price:offer, each, disc: price>0?Math.round((1-each/price)*100):0, cost:pcost, margin: offer>0?(offer-pcost)/offer*100:0 };
+  });
+}
+let lastSim=null, lastReal=null;
+
+function calcSim(){
+  const price=num($("sPrice").value), cost=num($("sCost").value), ship=num($("sShip").value);
+  const p = productCalc(price,cost,ship);
+  const [cls,txt] = marginStatus(p.margin);
+  $("mBox").className = "margin-box "+cls;
+  $("mPct").textContent = pct(p.margin); $("mStatus").textContent = txt;
+  $("mTotal").textContent = money(p.total); $("mUnit").textContent = money(p.unit);
+  $("pMin").textContent = money(roundMoney(p.pMin)); $("pOpt").textContent = money(roundMoney(p.pOpt));
+
+  // ofertas por cantidad
+  const offers = qtyOffers(price,cost,ship);
+  let oh="";
+  offers.forEach(o=>{
+    oh += `<div class="tile ${o.q===3?'pick good':'warn'}"><div class="k">${o.q} unidades<span class="badge">${o.q===3?'Mejor precio':'Pack'}</span></div>
+      <div class="v">${money(o.price)}</div>
+      <div class="split"><div class="d" style="display:flex;justify-content:space-between"><span>Precio por unidad</span><b class="num" style="color:var(--ink)">${money(roundMoney(o.each))}</b></div>
+      <div class="d" style="display:flex;justify-content:space-between"><span>Precio normal</span><s class="num">${money(price)}</s></div>
+      <div class="d" style="margin-top:6px"><span class="pill" style="background:var(--brand-soft);color:var(--brand)">−${o.disc}% por unidad</span></div>
+      <div class="d" style="margin-top:8px">Costo del pack ${money(o.cost)} · Margen ${pct(o.margin)}</div></div></div>`;
+  });
+  $("offers").innerHTML = oh;
+
+  const orders = Math.max(0,Math.round(num($("sOrders").value)));
+  const cp=+$("sCancel").value, rp=+$("sReturn").value;
+  $("sCancelOut").textContent=cp+"%"; $("sReturnOut").textContent=rp+"%";
+  const f = funnelCalc(orders,price,cost,ship,cp,rp);
+  renderFunnel($("funnelSim"),f);
+  $("sGross").textContent=money(f.gross); $("sGrossD").textContent=pct(f.grossPctDeliv)+" sobre lo entregado";
+  $("sLost").textContent=money(-f.lost); $("sLostD").textContent=`${f.returned} devoluciones × ${money(ship)}`;
+  $("sReal").textContent=money(f.real);
+  $("sReal").closest(".tile").className = "tile "+(f.real>=0?"good":"bad");
+
+  $("sSummary").innerHTML = `<span>Precio: <b>${money(price)}</b></span><span>Costo total: <b>${money(p.total)}</b></span>
+    <span>Margen bruto: <b>${pct(p.margin)}</b></span><span>Pedidos: <b>${orders}</b></span><span>Margen real: <b>${money(f.real)}</b></span>`;
+
+  const budgets = [35,40,50].map(b=>{ const budget=f.real*b/100; return {b,budget,cpa: orders>0?budget/orders:0, op: f.real-budget}; });
+  $("budgetTiles").innerHTML = budgets.map((x,i)=>`
+    <div class="tile ${i===0?'pick good':(i===1?'info':'warn')}">
+      <div class="k">${x.b}% del margen${i===0?'<span class="badge">Recomendado</span>':''}</div>
+      <div class="v">${money(roundMoney(x.budget))}</div><div class="d">Presupuesto total de pauta</div>
+      <div class="split"><div class="d">CPA máximo</div><div class="v" style="font-size:20px">${money(roundMoney(x.cpa))}</div><div class="d">con ${orders} pedidos</div></div>
+      <div class="split"><div class="d">Utilidad operacional</div><div class="v" style="font-size:20px">${money(roundMoney(x.op))}</div></div>
+    </div>`).join("");
+
+  // CPA actual
+  const cpa = num($("sCpa").value); let cr="", cpaInfo=null;
+  if(cpa>0){
+    const spend=cpa*orders, op=f.real-spend, share=f.real>0?spend/f.real*100:Infinity;
+    let cls2, msg;
+    if(op<0){cls2="s-bad";msg="Con este CPA pierdes plata. Bájalo por debajo de "+money(roundMoney(budgets[2].cpa))+" o mejora el margen.";}
+    else if(share<=35){cls2="s-good";msg="Tu CPA está dentro del rango sano. Puedes escalar.";}
+    else if(share<=50){cls2="s-warn";msg="Ganas, pero la pauta se come más del 35% del margen. Apunta a "+money(roundMoney(budgets[0].cpa))+".";}
+    else {cls2="s-bad";msg="La pauta se lleva más de la mitad del margen. Riesgoso: cualquier alza en devoluciones te deja en pérdida.";}
+    cr = `<div class="margin-box ${cls2}" style="height:100%"><div><div class="lbl">Utilidad operacional con tu CPA</div>
+      <div class="big num" style="font-size:36px">${money(roundMoney(op))}</div><div class="st" style="font-size:14px">${msg}</div>
+      <div class="d" style="color:var(--muted);font-size:13.5px;margin-top:6px">Inversión: ${money(roundMoney(spend))} · Pauta sobre margen real: ${isFinite(share)?pct(share):"—"}</div></div></div>`;
+    cpaInfo={cpa,spend,op,share,msg};
+  }
+  $("cpaResult").innerHTML = cr;
+  lastSim = {offers,price,cost,ship,p,status:txt,orders,cp,rp,f,budgets,cpaInfo};
+}
+
+function calcReal(){
+  const price=num($("rPrice").value), cost=num($("rCost").value), ship=num($("rShip").value);
+  const spend=num($("rSpend").value), orders=Math.round(num($("rOrders").value)), days=Math.round(num($("rDays").value));
+  const cp=+$("rCancel").value, rp=+$("rReturn").value;
+  $("rCancelOut").textContent=cp+"%"; $("rReturnOut").textContent=rp+"%";
+  const miss=[]; if(!price)miss.push("Precio de venta"); if(!cost)miss.push("Costo del producto"); if(!ship)miss.push("Flete promedio");
+  if(!spend)miss.push("Inversión en pauta"); if(!orders)miss.push("Pedidos totales"); if(!days)miss.push("Días de campaña");
+  $("rPending").hidden = !miss.length;
+  $("rPending").innerHTML = "<b>Te falta completar:</b> "+miss.map(m=>`<span class="pill">${m}</span>`).join("");
+  $("rResults").hidden = !!miss.length;
+  if(miss.length){ lastReal=null; return; }
+
+  const p=productCalc(price,cost,ship), f=funnelCalc(orders,price,cost,ship,cp,rp);
+  const profit=f.real-spend, perDay=profit/days, month=perDay*30;
+  const cpaReal=spend/orders, share=f.real>0?spend/f.real*100:Infinity;
+  const roas=spend>0?f.delivSales/spend:0, cpaMax35=f.real*0.35/orders, cpaBreak=f.real/orders;
+  renderFunnel($("funnelReal"),f);
+  $("rProfit").textContent=money(roundMoney(profit)); $("rDay").textContent=money(roundMoney(perDay)); $("rMonth").textContent=money(roundMoney(month));
+  let cls,st,ver;
+  if(profit<0){cls="s-bad";st="Estás perdiendo plata";ver=`Para no perder, tu CPA debe bajar de ${money(roundMoney(cpaReal))} a menos de ${money(roundMoney(cpaBreak))}. Revisa creativos, oferta o precio.`;}
+  else if(share<=35){cls="s-good";st="Campaña rentable y sana";ver="La pauta está dentro del 35% del margen real. Buen momento para escalar con cuidado.";}
+  else if(share<=50){cls="s-warn";st="Rentable, pero al límite";ver=`La pauta se come el ${pct(share)} del margen real. Tu meta de CPA es ${money(roundMoney(cpaMax35))}.`;}
+  else {cls="s-bad";st="Ganancia muy frágil";ver=`La pauta supera la mitad del margen real. Baja el CPA hacia ${money(roundMoney(cpaMax35))} antes de escalar.`;}
+  $("rBox").className="margin-box "+cls; $("rStatus").textContent=st;
+  $("rVerdict").className="verdict "+cls; $("rVerdict").textContent=ver;
+  const tiles=[
+    ["Margen bruto",pct(p.margin),"Ganancia por unidad "+money(p.unit),marginStatus(p.margin)[0]==="s-good"?"good":"warn"],
+    ["CPA real",money(roundMoney(cpaReal)),"Inversión ÷ pedidos","info"],
+    ["CPA máximo sano (35%)",money(roundMoney(cpaMax35)),"Punto de equilibrio: "+money(roundMoney(cpaBreak)),"good"],
+    ["Margen bruto real",money(f.real),"Tras fletes perdidos "+money(-f.lost),f.real>=0?"good":"bad"],
+    ["Pauta sobre margen real",isFinite(share)?pct(share):"—","Ideal: 35% o menos",share<=35?"good":(share<=50?"warn":"bad")],
+    ["ROAS real",roas.toFixed(2)+"x","Ventas entregadas ÷ inversión","info"],
+    ["Pedidos por día",(orders/days).toLocaleString("es-CO",{maximumFractionDigits:1}),`${orders} pedidos en ${days} días`,""],
+    ["Ventas entregadas",money(f.delivSales),`${f.delivered} de ${orders} pedidos`,"good"]
+  ];
+  $("rTiles").innerHTML = tiles.map(t=>`<div class="tile ${t[3]}"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
+  lastReal={price,cost,ship,spend,orders,days,cp,rp,p,f,profit,perDay,month,cpaReal,share,roas,cpaMax35,cpaBreak,st,ver};
+}
+
+function calc(){ mode==="sim"?calcSim():calcReal(); }
+
+/* ---------- PDF ---------- */
+function buildPdf(){
+  const { jsPDF } = window.jspdf; const doc=new jsPDF({unit:"pt",format:"a4"});
+  const W=595, M=44; let y=0;
+  const green=[0,0,0], ink=[24,38,58], muted=[91,104,120];
+  doc.setFillColor(0,0,0); doc.rect(0,0,W,96,"F");
+  try{ const lg=$("brandLogo"); const lh=46, lw=lh*lg.naturalWidth/lg.naturalHeight; doc.addImage(lg.src,"JPEG",M-6,10,lw,lh); }
+  catch(e){ doc.setTextColor(254,242,0); doc.setFont("helvetica","bold"); doc.setFontSize(22); doc.text("ALIADIG",M,40); }
+  doc.setFillColor(254,242,0); doc.rect(0,96,W,4,"F");
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","normal"); doc.setFontSize(11);
+  doc.text(mode==="sim"?"Análisis de rentabilidad contra entrega · Simulación":"Análisis de rentabilidad contra entrega · Campaña real",M,80);
+  doc.text(new Date().toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric"})+" · "+C.name,W-M,80,{align:"right"});
+  const rg=getReg(); if(rg){ doc.setFontSize(10); doc.text("Preparado para: "+rg.nombre+" "+rg.apellido,W-M,40,{align:"right"}); }
+  y=128;
+  const section=t=>{ if(y>740){doc.addPage();y=60;} doc.setTextColor(...green);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text(t,M,y);y+=8;doc.setDrawColor(211,220,216);doc.line(M,y,W-M,y);y+=18; };
+  const row=(k,v,bold)=>{ if(y>780){doc.addPage();y=60;} doc.setFontSize(11);doc.setTextColor(...muted);doc.setFont("helvetica","normal");doc.text(k,M,y);
+    doc.setTextColor(...ink);doc.setFont("helvetica",bold?"bold":"normal");doc.text(String(v),W-M,y,{align:"right"});y+=18; };
+  const para=t=>{ doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(...ink);const lines=doc.splitTextToSize(t,W-2*M);doc.text(lines,M,y);y+=lines.length*15+6; };
+  const funnel=f=>{ row("Pedidos generados",`${f.orders}  ·  ${money(f.sales)}`); row("Cancelados",f.cancelled); row("Despachados",`${f.dispatched}  ·  ${money(f.dispSales)}`);
+    row("Devueltos",f.returned); row("Entregados y pagados",`${f.delivered}  ·  ${money(f.delivSales)}`,true); };
+
+  if(mode==="sim"){
+    const s=lastSim;
+    section("1. Costos del producto");
+    row("Costo del producto",money(s.cost)); row("Flete promedio",money(s.ship)); row("Precio de venta",money(s.price));
+    row("Costo total",money(s.p.total)); row("Ganancia por unidad",money(s.p.unit),true); row("Margen bruto",pct(s.p.margin),true);
+    row("Precio mínimo (margen 50%)",money(roundMoney(s.p.pMin))); row("Precio recomendado (margen 60%)",money(roundMoney(s.p.pOpt)));
+    para("Diagnóstico: "+s.status+".");
+    s.offers.forEach(o=>{ row(`Oferta ${o.q} unidades`,money(o.price),true); row(`   Precio por unidad (−${o.disc}%)`,money(roundMoney(o.each))); row(`   Margen del pack`,pct(o.margin)); });
+    section("2. Simulación de ventas");
+    row("Cancelaciones",s.cp+"%"); row("Devoluciones",s.rp+"%"); funnel(s.f);
+    row("Margen bruto de lo entregado",money(s.f.gross)); row("Fletes perdidos en devoluciones",money(-s.f.lost)); row("Margen bruto real",money(s.f.real),true);
+    section("3. Presupuesto de pauta");
+    s.budgets.forEach(b=>{ row(`${b.b}% del margen · presupuesto`,money(roundMoney(b.budget)),b.b===35); row(`   CPA máximo`,money(roundMoney(b.cpa))); row(`   Utilidad operacional`,money(roundMoney(b.op))); });
+    if(s.cpaInfo){ y+=4; row("Tu CPA actual",money(s.cpaInfo.cpa)); row("Inversión estimada",money(roundMoney(s.cpaInfo.spend)));
+      row("Utilidad operacional con tu CPA",money(roundMoney(s.cpaInfo.op)),true); para(s.cpaInfo.msg); }
+  } else {
+    const r=lastReal;
+    section("1. Producto");
+    row("Precio de venta",money(r.price)); row("Costo del producto",money(r.cost)); row("Flete promedio",money(r.ship));
+    row("Margen bruto",pct(r.p.margin),true);
+    section("2. Campaña");
+    row("Inversión en pauta",money(r.spend)); row("Pedidos totales",r.orders); row("Días de campaña",r.days);
+    row("Cancelaciones",r.cp+"%"); row("Devoluciones",r.rp+"%"); funnel(r.f);
+    section("3. Resultados");
+    row("Margen bruto real",money(r.f.real)); row("CPA real",money(roundMoney(r.cpaReal))); row("CPA máximo sano (35%)",money(roundMoney(r.cpaMax35)));
+    row("CPA de punto de equilibrio",money(roundMoney(r.cpaBreak))); row("Pauta sobre margen real",isFinite(r.share)?pct(r.share):"—"); row("ROAS real",r.roas.toFixed(2)+"x");
+    row("Utilidad operacional del periodo",money(roundMoney(r.profit)),true); row("Utilidad por día",money(roundMoney(r.perDay))); row("Proyección 30 días",money(roundMoney(r.month)),true);
+    para(r.st+". "+r.ver);
+  }
+  y+=8; section("Reglas de referencia");
+  para("Costo total (producto + flete) máximo 50% del precio de venta. Lo ideal es 40%, para un margen bruto del 60%. La pauta no debería superar el 35% del margen bruto real.");
+  section("Beneficios de la comunidad Aliadig");
+  row("Dropi · cero cobro por uso","app.dropi.co/aliadig");
+  row("Releasit · +60 pedidos gratis (120 en total)","apps.shopify.com/releasit-cod-order-form");
+  row("Dropkiller · 10% de descuento","dropkiller.com?fpr=991qwq");
+  section("Mentoría en dropshipping y e-commerce");
+  row("Mentor",CONFIG.mentorName,true);
+  row("WhatsApp","+57 316 347 3137");
+  row("Instagram","@leomergbusiness");
+  doc.setFontSize(9);doc.setTextColor(...muted);doc.text("Generado con la Calculadora de rentabilidad Aliadig. Resultados estimados con los datos ingresados.",M,822);
+  return doc;
+}
+$("pdfBtn").addEventListener("click", async ()=>{
+  const msg=$("pdfMsg"); msg.textContent="";
+  calc();
+  if(mode==="real" && !lastReal){ msg.textContent="Completa los campos pendientes antes de descargar."; return; }
+  if(!window.jspdf){ msg.textContent="No se pudo cargar el generador de PDF. Recarga la página."; return; }
+  const rgx=getReg();
+  if(!rgx){ openReg("pdf"); return; }
+  if(!(rgx.plataformas&&rgx.plataformas.length)){ openReg("benefits"); return; }
+  await downloadPdf();
+});
+async function downloadPdf(){
+  const msg=$("pdfMsg");
+  const doc=buildPdf(), name=`aliadig-rentabilidad-${mode==="sim"?"simulacion":"real"}.pdf`;
+  let dl=null; try{ dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; }catch(e){}
+  if(dl){
+    try{ await dl.save({filename:name,data:doc.output("blob")}); msg.textContent="PDF listo."; }
+    catch(e){ if(e&&e.code==="declined") msg.textContent="Descarga cancelada."; else if(e&&e.code==="rate_limited") msg.textContent="Espera un momento e intenta de nuevo."; else doc.save(name); }
+  } else { doc.save(name); }
+}
+
+/* ---------- UI ---------- */
+function setMode(m){
+  mode=m; $("modeSim").hidden=m!=="sim"; $("modeReal").hidden=m!=="real";
+  $("tabSim").setAttribute("aria-selected",m==="sim"); $("tabReal").setAttribute("aria-selected",m==="real");
+  $("heroTitle").textContent = m==="sim"?"Antes de pautar, mira si el producto te deja plata":"¿Cuánto te está dejando lo que ya inviertes?";
+  $("heroSub").textContent = m==="sim"?"Pon tus costos, simula cancelaciones y devoluciones, y descubre cuánto puedes pagar por pedido en publicidad.":"Mete los datos reales de tu campaña y mira tu utilidad exacta, tu CPA real y hasta dónde puedes escalar.";
+  if(m==="real"){ ["Price","Cost","Ship"].forEach(k=>{ if(!$("r"+k).value) $("r"+k).value=$("s"+k).value; }); }
+  calc();
+}
+function loadCountry(k){
+  C=COUNTRIES[k];
+  document.querySelectorAll(".cur").forEach(s=>s.textContent=C.sym);
+  document.querySelectorAll(".shipHint").forEach(s=>s.textContent=C.hint);
+  $("sCost").value=C.d.cost; $("sShip").value=C.d.ship; $("sPrice").value=C.d.price;
+  $("rPrice").value=C.d.price; $("rCost").value=C.d.cost; $("rShip").value=C.d.ship;
+  calc();
+}
+Object.entries(COUNTRIES).forEach(([k,c])=>{const o=document.createElement("option");o.value=k;o.textContent=`${c.flag} ${c.name}`;$("country").appendChild(o);});
+$("country").addEventListener("change",e=>loadCountry(e.target.value));
+$("tabSim").onclick=()=>setMode("sim"); $("tabReal").onclick=()=>setMode("real");
+$("goReal").onclick=()=>{setMode("real");window.scrollTo({top:0,behavior:"smooth"});};
+document.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));
+$("themeBtn").onclick=()=>{ const r=document.documentElement; const dark=r.dataset.theme?r.dataset.theme==="dark":matchMedia("(prefers-color-scheme: dark)").matches;
+  r.dataset.theme=dark?"light":"dark"; try{localStorage.setItem("aliadig-theme",r.dataset.theme);}catch(e){} };
+try{const t=localStorage.getItem("aliadig-theme"); if(t) document.documentElement.dataset.theme=t;}catch(e){}
+$("lnkAgenda").href=CONFIG.agendaUrl; $("lnkCurso").href=CONFIG.cursoUrl; $("lnkIg").href=CONFIG.instagram; $("waFloat").href=wa("Hola Leonel, vengo de la calculadora Aliadig y quiero más información.");
+$("sOrders").value=10; $("sCancel").value=20; $("sReturn").value=20; $("rCancel").value=20; $("rReturn").value=20;
+$("yr").textContent=new Date().getFullYear();
+loadCountry("CO");
+
+
+/* ---------- REGISTRO ---------- */
+const PHONE_CODES=[["AR","🇦🇷","Argentina","54"],["BO","🇧🇴","Bolivia","591"],["BR","🇧🇷","Brasil","55"],["CL","🇨🇱","Chile","56"],
+ ["CO","🇨🇴","Colombia","57"],["CR","🇨🇷","Costa Rica","506"],["CU","🇨🇺","Cuba","53"],["EC","🇪🇨","Ecuador","593"],
+ ["SV","🇸🇻","El Salvador","503"],["GT","🇬🇹","Guatemala","502"],["HN","🇭🇳","Honduras","504"],["MX","🇲🇽","México","52"],
+ ["NI","🇳🇮","Nicaragua","505"],["PA","🇵🇦","Panamá","507"],["PY","🇵🇾","Paraguay","595"],["PE","🇵🇪","Perú","51"],
+ ["PR","🇵🇷","Puerto Rico","1"],["DO","🇩🇴","República Dominicana","1"],["UY","🇺🇾","Uruguay","598"],["VE","🇻🇪","Venezuela","58"],
+ ["ES","🇪🇸","España","34"],["US","🇺🇸","Estados Unidos","1"]];
+const phoneOf=iso=>PHONE_CODES.find(x=>x[0]===iso)||PHONE_CODES[4];
+$("rgCc").innerHTML=PHONE_CODES.map(([iso,f,n,c])=>`<option value="${iso}">${f} ${n} (+${c})</option>`).join("");
+function syncCc(){ const [,f,,c]=phoneOf($("rgCc").value); $("rgCcShow").textContent=`${f} +${c}`; }
+$("rgCc").addEventListener("change",syncCc);
+let ccTouched=false; $("rgCc").addEventListener("change",()=>{ccTouched=true;});
+const REG_KEY="aliadig-registro"; let regMem=null;
+function getReg(){ if(regMem) return regMem; try{ const r=JSON.parse(localStorage.getItem(REG_KEY)||"null"); if(r) regMem=r; return r; }catch(e){ return null; } }
+function saveReg(r){ regMem=r; try{ localStorage.setItem(REG_KEY,JSON.stringify(r)); }catch(e){} showRegOk(); }
+function showRegOk(){ const r=getReg(), el=$("regOk"); if(!r){ el.hidden=true; return; }
+  el.hidden=false; el.innerHTML=""; const t=document.createElement("span"); t.textContent="Registrado como "+r.nombre+" "+r.apellido+".";
+  const b=document.createElement("button"); b.type="button"; b.textContent="No soy yo"; b.onclick=()=>{ regMem=null; try{localStorage.removeItem(REG_KEY);}catch(e){} showRegOk(); openReg("entry"); };
+  el.append(t,b); }
+const PLATS=[
+  {id:"dropi",name:"Dropi",benefit:"Cero cobro por uso",url:"https://app.dropi.co/aliadig"},
+  {id:"releasit",name:"Releasit",benefit:"+60 pedidos gratis (120 en total)",url:"https://apps.shopify.com/releasit-cod-order-form?s=ref&ref=aliadig&locale=es"},
+  {id:"dropkiller",name:"Dropkiller",benefit:"10% de descuento",url:"https://dropkiller.com?fpr=991qwq"}
+];
+function buildPlats(){
+  $("regPlats").innerHTML=PLATS.map(p=>{
+    const img=document.querySelector(`img[alt="Logo de ${p.name}"]`);
+    return `<div class="plat" id="pl_${p.id}"><img src="${img?img.src:""}" alt="" width="38" height="38">
+      <div class="pi"><b>${p.name}</b><small>${p.benefit}</small></div>
+      <a class="btn primary" href="${p.url}" target="_blank" rel="noopener" data-p="${p.id}">Registrarme</a>
+      <label><input type="checkbox" data-c="${p.id}">Listo</label></div>`;}).join("");
+  $("regPlats").querySelectorAll("a[data-p]").forEach(a=>a.addEventListener("click",()=>{ const c=$("regPlats").querySelector(`[data-c="${a.dataset.p}"]`); c.checked=true; syncPlats(); }));
+  $("regPlats").querySelectorAll("input[data-c]").forEach(c=>c.addEventListener("change",syncPlats));
+}
+function syncPlats(){ PLATS.forEach(p=>{ const c=$("regPlats").querySelector(`[data-c="${p.id}"]`); $("pl_"+p.id).classList.toggle("on",c.checked); }); }
+/* modos: "entry" = registro a los 40 s (obligatorio) · "pdf" = datos + beneficio · "benefits" = solo beneficio */
+let regMode="pdf";
+const REG_TEXT={
+  entry:["Sigue usando la calculadora gratis","Regístrate en 20 segundos para seguir calculando. Es gratis y solo se pide una vez.","Continuar con la calculadora"],
+  pdf:["Descarga tu PDF gratis","Déjanos tus datos y activa al menos uno de tus beneficios de la comunidad Aliadig.","Registrarme y descargar PDF"],
+  benefits:["Activa un beneficio para descargar","Regístrate en al menos una plataforma con los enlaces de Aliadig y descarga tu PDF.","Descargar PDF"]
+};
+function openReg(m){
+  regMode=m||"pdf"; const [t,sub,btn]=REG_TEXT[regMode];
+  $("regTitle").textContent=t; $("regSub").textContent=sub; $("regSubmit").textContent=btn;
+  $("regContact").hidden = regMode==="benefits";
+  $("regBenefits").hidden = regMode==="entry";
+  $("regClose").hidden = regMode==="entry";
+  if(!ccTouched){ $("rgCc").value=$("country").value; } syncCc(); $("regErr").textContent="";
+  if(!$("reg").open) $("reg").showModal();
+}
+$("regClose").onclick=()=>{ if(regMode!=="entry") $("reg").close(); };
+$("reg").addEventListener("click",e=>{ if(e.target.id==="reg" && regMode!=="entry") $("reg").close(); });
+$("reg").addEventListener("cancel",e=>{ if(regMode==="entry") e.preventDefault(); });
+/* temporizador de uso libre: se guarda la primera visita para que recargar no reinicie el conteo */
+const FIRST_KEY="aliadig-primera-visita";
+function startGate(){
+  if(getReg()) return;
+  let first=Date.now(); try{ const v=+localStorage.getItem(FIRST_KEY); if(v) first=v; else localStorage.setItem(FIRST_KEY,String(first)); }catch(e){}
+  const left=Math.max(0, CONFIG.gateSeconds*1000-(Date.now()-first));
+  setTimeout(()=>{ if(!getReg()){ if($("tut").open) $("tut").close(); openReg("entry"); } }, left);
+}
+async function sendLead(d){
+  if(!CONFIG.leadsUrl) return;
+  try{ await fetch(CONFIG.leadsUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(d)}); }catch(e){}
+}
+$("regForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const v=id=>$(id).value.trim(), err=$("regErr");
+  const m=regMode, prev=getReg();
+  const plats=PLATS.filter(p=>$("regPlats").querySelector(`[data-c="${p.id}"]`).checked).map(p=>p.name);
+  let r;
+  if(m==="benefits"){ r={...prev}; }
+  else {
+    const nombre=v("rgNombre"), apellido=v("rgApellido"), email=v("rgEmail"), tel=v("rgTel").replace(/\D/g,"");
+    if(nombre.length<2||apellido.length<2){ err.textContent="Escribe tu nombre y apellido."; return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ err.textContent="Revisa tu correo electrónico."; return; }
+    if(tel.length<7||tel.length>12){ err.textContent="Escribe un número de WhatsApp válido."; return; }
+    if(!$("rgConsent").checked){ err.textContent="Acepta el uso de tus datos para continuar."; return; }
+    const ph=phoneOf($("rgCc").value); r={nombre,apellido,email,whatsapp:"+"+ph[3]+tel,pais:ph[2],plataformas:[],fecha:new Date().toISOString()};
+  }
+  if(m!=="entry"){
+    if(!plats.length){ err.textContent="Activa al menos un beneficio: regístrate en Dropi, Releasit o Dropkiller."; return; }
+    r.plataformas=plats;
+  }
+  err.textContent=""; const label=$("regSubmit").textContent; $("regSubmit").disabled=true; $("regSubmit").textContent=m==="entry"?"Guardando…":"Preparando tu PDF…";
+  saveReg(r);
+  const s=lastSim||{};
+  await sendLead({...r,paso:m==="entry"?"Registro al entrar":"Descarga de PDF",modo:mode==="sim"?"Simulación":"Campaña real",precio:s.price||"",costo:s.cost||"",flete:s.ship||"",margen:s.p?pct(s.p.margin):""});
+  $("reg").close(); $("regSubmit").disabled=false; $("regSubmit").textContent=label;
+  if(m!=="entry") await downloadPdf();
+});
+buildPlats(); showRegOk(); startGate();
+
+/* ---------- TUTORIAL ---------- */
+const TUT_GROUPS=[["Cómo usarla",0],["La lógica",3],["Recomendaciones",9],["Beneficios",11]];
+function tutSlides(){
+  if(!lastSim){ mode="sim"; calcSim(); }
+  const s=lastSim, f=s.f, o=s.offers||[], b=s.budgets;
+  const F=(t,r)=>`<div class="formula"><div class="f1">${t}</div><div class="f2">${r}</div></div>`;
+  const ex=`<p>Los ejemplos usan <b>los números que tienes ahora en la calculadora</b>. Cámbialos y vuelve a abrir el tutorial para ver tus propios cálculos.</p>`;
+  return [
+  {k:"Bienvenida",t:"Qué hace esta calculadora",go:null,h:`
+    <p>Te dice, antes de gastar en publicidad, si un producto contra entrega <b>de verdad te deja plata</b>, y cuánto puedes pagar por cada pedido sin perder.</p>
+    <ul><li><b>Paso 1 · Costos:</b> margen bruto, precio mínimo, precio recomendado y ofertas por cantidad.</li>
+    <li><b>Paso 2 · Simulación:</b> qué queda después de cancelaciones y devoluciones.</li>
+    <li><b>Paso 3 · Pauta:</b> presupuesto de anuncios, CPA máximo y utilidad.</li>
+    <li><b>Mis números reales:</b> para cuando ya tienes una campaña corriendo.</li></ul>
+    <p>Arriba eliges tu <b>país</b> (cambia moneda y formato) y puedes activar el modo oscuro. Al final descargas todo en <b>PDF</b>.</p>`},
+  {k:"Cómo usarla",t:"Llena los datos en orden",go:"sCost",h:`
+    <ul><li><b>Costo del producto:</b> lo que te cobra el proveedor (por ejemplo, el precio en Dropi).</li>
+    <li><b>Flete promedio:</b> lo que cuesta enviar un pedido. Usa el promedio de tus transportadoras.</li>
+    <li><b>Precio de venta:</b> lo que paga el cliente.</li>
+    <li><b>Pedidos por día, % cancelaciones y % devoluciones</b> en el paso 2.</li>
+    <li>Opcional: tu <b>CPA actual</b> en el paso 3.</li></ul>
+    <p>Todo se recalcula al instante, no hay botón de calcular.</p>`},
+  {k:"Cómo usarla",t:"Simular o usar números reales",go:"tabReal",h:`
+    <p><b>Simular</b> sirve para decidir si lanzas un producto: inventas un escenario realista y ves si aguanta.</p>
+    <p><b>Mis números reales</b> sirve cuando ya pautaste: pones lo que invertiste, los pedidos que entraron y en cuántos días, y te dice tu utilidad exacta, CPA real, ROAS y proyección a 30 días.</p>
+    <div class="tipbox">Si faltan datos en el modo real, la calculadora te muestra cuáles completar antes de dar resultados.</div>`},
+  {k:"La lógica",t:"Margen bruto",go:"mBox",h:ex+
+    F("Costo total = costo del producto + flete",`${money(s.cost)} + ${money(s.ship)} = ${money(s.p.total)}`)+
+    F("Ganancia por unidad = precio − costo total",`${money(s.price)} − ${money(s.p.total)} = ${money(s.p.unit)}`)+
+    F("Margen bruto = ganancia por unidad ÷ precio",`${money(s.p.unit)} ÷ ${money(s.price)} = ${pct(s.p.margin)}`)+
+    `<ul><li><b>60% o más:</b> excelente.</li><li><b>50% a 60%:</b> aceptable.</li><li><b>40% a 50%:</b> ajustado, sube el precio.</li><li><b>Menos de 40%:</b> riesgoso.</li></ul>`},
+  {k:"La lógica",t:"Precio mínimo y recomendado",go:"pMin",h:`
+    <p>Salen de despejar el precio que deja un margen exacto.</p>`+
+    F("Precio mínimo (margen 50%) = costo total ÷ 0,5",`${money(s.p.total)} ÷ 0,5 = ${money(roundMoney(s.p.pMin))}`)+
+    F("Precio recomendado (margen 60%) = costo total ÷ 0,4",`${money(s.p.total)} ÷ 0,4 = ${money(roundMoney(s.p.pOpt))}`)+
+    `<p>Si vendes por debajo del mínimo, las devoluciones y la pauta te van a dejar sin margen.</p>`},
+  {k:"La lógica",t:"Ofertas por cantidad",go:"offers",h:
+    (o[0]?F("Pack de 2 = precio × 1,5, redondeado a precio comercial",`${money(s.price)} × 1,5 → ${money(o[0].price)} (${money(roundMoney(o[0].each))} c/u, −${o[0].disc}%)`):"")+
+    (o[1]?F("Pack de 3 = precio × 1,8, redondeado a precio comercial",`${money(s.price)} × 1,8 → ${money(o[1].price)} (${money(roundMoney(o[1].each))} c/u, −${o[1].disc}%)`):"")+
+    F("Descuento por unidad = 1 − (precio del pack ÷ unidades) ÷ precio normal","Es el ahorro que ve el cliente")+
+    `<p>Como el pack viaja en <b>un solo flete</b>, subes el ticket sin pagar más envío.</p>`},
+  {k:"La lógica",t:"Cancelaciones y devoluciones",go:"funnelSim",h:
+    F("Cancelados = pedidos × % cancelaciones",`${f.orders} × ${s.cp}% = ${f.cancelled} → despachas ${f.dispatched}`)+
+    F("Devueltos = despachados × % devoluciones",`${f.dispatched} × ${s.rp}% = ${f.returned} → entregas ${f.delivered}`)+
+    `<p>Ojo: las devoluciones se calculan sobre lo <b>despachado</b>, no sobre el total. Los resultados se redondean a pedidos enteros.</p>`},
+  {k:"La lógica",t:"Margen bruto real",go:"sReal",h:
+    F("Margen bruto = entregados × ganancia por unidad",`${f.delivered} × ${money(s.p.unit)} = ${money(f.gross)}`)+
+    F("Fletes perdidos = devueltos × flete",`${f.returned} × ${money(s.ship)} = ${money(f.lost)}`)+
+    F("Margen bruto real = margen bruto − fletes perdidos",`${money(f.gross)} − ${money(f.lost)} = ${money(f.real)}`)+
+    `<p>Este es el dinero que de verdad tienes para pagar publicidad y ganar.</p>`},
+  {k:"La lógica",t:"Presupuesto de pauta y CPA máximo",go:"budgetTiles",h:
+    F("Presupuesto = margen bruto real × 35% (o 40%, 50%)",`${money(f.real)} × 35% = ${money(roundMoney(b[0].budget))}`)+
+    F("CPA máximo = presupuesto ÷ pedidos",`${money(roundMoney(b[0].budget))} ÷ ${f.orders} = ${money(roundMoney(b[0].cpa))}`)+
+    F("Utilidad operacional = margen bruto real − presupuesto",`${money(f.real)} − ${money(roundMoney(b[0].budget))} = ${money(roundMoney(b[0].op))}`)+
+    `<p>Con tu <b>CPA actual</b>: inversión = CPA × pedidos, y utilidad = margen real − inversión. En el modo real, CPA real = inversión ÷ pedidos y ROAS = ventas entregadas ÷ inversión.</p>`},
+  {k:"Recomendaciones",t:"Antes de lanzar un producto",go:null,h:`
+    <ul><li>Busca que el <b>costo total no pase del 40%</b> del precio. Si no se puede, al menos del 50%.</li>
+    <li>Usa <b>fletes reales</b> de tu transportadora y ciudad, no el más barato.</li>
+    <li>Simula con <b>20% de cancelaciones y 20% de devoluciones</b> si aún no tienes datos. Si el producto solo funciona con 5%, no es rentable.</li>
+    <li>Si el margen sale ajustado, prueba primero <b>subir el precio o armar packs</b> antes que bajar la calidad.</li>
+    <li>Arma el <b>pack de 3 como "mejor precio"</b>: sube el ticket promedio y diluye el flete.</li></ul>`},
+  {k:"Recomendaciones",t:"Cuando ya estás pautando",go:"sCpa",h:`
+    <ul><li>Tu <b>CPA objetivo es el del 35%</b>. Entre 35% y 50% ganas pero estás al límite; por encima del 50% no escales.</li>
+    <li><b>Confirma pedidos por WhatsApp</b>: bajar cancelaciones y devoluciones vale más que bajar el CPA.</li>
+    <li>Mide con <b>al menos 7 días</b> de datos en "Mis números reales" antes de decidir.</li>
+    <li>Recalcula cada semana: si sube la devolución, tu CPA máximo baja.</li>
+    <li>Descarga el <b>PDF</b> y compártelo con tu socio o mentor para revisar juntos.</li></ul>`},
+  {k:"Beneficios",t:"Tus beneficios como parte de Aliadig",go:"perks",h:`
+    <ul><li><b>Dropi:</b> cero cobro por uso de la plataforma.</li>
+    <li><b>Releasit:</b> 60 pedidos gratis adicionales, 120 en total, en el formulario para Shopify.</li>
+    <li><b>Dropkiller:</b> 10% de descuento en el plan que elijas para buscar productos ganadores.</li></ul>
+    <p>Regístrate desde los botones de la sección de beneficios para que se apliquen. Para descargar el PDF necesitas tus datos y al menos un beneficio activado.</p>
+    <p>¿Quieres ir más rápido? La <b>mentoría con ${CONFIG.mentorName}</b> te acompaña en producto, tienda, pauta y logística.</p>
+    <p><a class="btn primary" href="${CONFIG.cursoUrl}" target="_blank" rel="noopener">Quiero mi entrenamiento</a></p>`+
+    (CONFIG.videoUrl&&CONFIG.videoUrl!=="#"?`<p><a class="btn ghost" href="${CONFIG.videoUrl}" target="_blank" rel="noopener">Ver también el video</a></p>`:"")}
+  ];
+}
+let tutI=0, TS=[];
+function tutRender(){
+  const sl=TS[tutI];
+  $("tutChips").innerHTML=TUT_GROUPS.map(([n,i],gi)=>{const next=TUT_GROUPS[gi+1]?TUT_GROUPS[gi+1][1]:TS.length;
+    return `<button type="button" class="${tutI>=i&&tutI<next?'on':''}" data-i="${i}">${n}</button>`}).join("");
+  $("tutBar").style.width=((tutI+1)/TS.length*100)+"%";
+  $("tutBody").innerHTML=`<div class="kick">${sl.k}</div><h3>${sl.t}</h3>${sl.h}`+
+    (sl.go?`<button class="btn ghost" type="button" id="tutGo">Ver en la calculadora</button>`:"");
+  $("tutBody").scrollTop=0;
+  $("tutCount").textContent=`${tutI+1} de ${TS.length}`;
+  $("tutPrev").disabled=tutI===0; $("tutPrev").style.opacity=tutI===0?.4:1;
+  $("tutNext").textContent=tutI===TS.length-1?"Terminar":"Siguiente";
+  const g=$("tutGo"); if(g) g.onclick=()=>tutGoTo(sl.go);
+}
+function tutGoTo(id){
+  $("tut").close();
+  if(id==="tabReal"){ setMode("real"); id="rSpend"; }
+  else if(id!=="perks") setMode("sim");
+  if(id==="offers") document.querySelector("details.offers").open=true;
+  const el=$(id); const target=el.closest(".margin-box,.tile,.funnel,.tiles,.f,.perks,details")||el;
+  target.scrollIntoView({behavior:"smooth",block:"center"});
+  target.classList.remove("flash"); void target.offsetWidth; target.classList.add("flash");
+}
+$("openTut").onclick=()=>{ TS=tutSlides(); tutI=0; tutRender(); $("tut").showModal(); };
+$("tutClose").onclick=()=>$("tut").close();
+$("tutPrev").onclick=()=>{ if(tutI>0){tutI--;tutRender();} };
+$("tutNext").onclick=()=>{ if(tutI<TS.length-1){tutI++;tutRender();} else $("tut").close(); };
+$("tutChips").onclick=e=>{ const b=e.target.closest("button"); if(b){tutI=+b.dataset.i;tutRender();} };
+$("tut").addEventListener("click",e=>{ if(e.target.id==="tut") $("tut").close(); });
+</script>
+</body>
+</html>
