@@ -175,6 +175,12 @@ button{font:inherit;cursor:pointer}
 .reg-ok{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted);margin-top:6px}
 .reg-ok button{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;font-size:13.5px}
 
+.cushion{margin-top:12px;border-radius:14px;padding:14px 16px;font-size:14.5px;background:var(--field);border:1px solid var(--line)}
+.cushion b{color:var(--ink)}
+.cushion p{margin:0;color:var(--muted)}
+.cushion p+p{margin-top:6px}
+.cushion .ck{font-weight:800;color:var(--ink);margin-bottom:6px;display:block}
+.cushion.ok{border-left:4px solid var(--brand)} .cushion.short{border-left:4px solid var(--loss)}
 /* cards */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;margin:18px 0;overflow:hidden}
 .card-head{display:flex;gap:14px;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}
@@ -338,6 +344,7 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
           <div class="f"><label for="sShip">Flete promedio</label><div class="in"><span class="cur">$</span><input id="sShip" inputmode="decimal"></div><small class="shipHint"></small></div>
           <div class="f"><label for="sPrice">Precio de venta</label><div class="in"><span class="cur">$</span><input id="sPrice" inputmode="decimal"></div><small>Lo que paga tu cliente</small></div>
         </div>
+        <div class="fields" style="margin-top:16px"><div class="f"><label for="sFulf">Fulfillment u otros costos por pedido</label><div class="in"><span class="cur">$</span><input id="sFulf" inputmode="decimal" placeholder="0"></div><small>Opcional: bodega, empaque, comisión del asesor. Déjalo en 0 si no aplica</small></div></div>
         <div class="hr"></div>
         <div class="margin-box" id="mBox">
           <div>
@@ -351,9 +358,10 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
           </div>
         </div>
         <div class="tiles">
-          <div class="tile"><div class="k">Precio mínimo (margen 50%)</div><div class="v" id="pMin"></div><div class="d">Por debajo de esto el margen queda corto</div></div>
-          <div class="tile good"><div class="k">Precio recomendado (margen 60%)</div><div class="v" id="pOpt"></div><div class="d">El punto sano para pautar con aire</div></div>
+          <div class="tile"><div class="k">Precio mínimo (margen 50%)</div><div class="v" id="pMin"></div><div class="d">Cubre producto y flete, pero no deja colchón para devoluciones</div></div>
+          <div class="tile good"><div class="k">Precio recomendado (margen 60%)</div><div class="v" id="pOpt"></div><div class="d">Deja un colchón del 10% para devoluciones y te quedas con margen del 50%</div></div>
         </div>
+        <div class="cushion" id="cushion"></div>
         <details class="offers">
           <summary>Ver ofertas por cantidad sugeridas</summary>
           <div class="tiles" id="offers"></div>
@@ -407,6 +415,7 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
           <div class="f"><label for="rCost">Costo del producto</label><div class="in"><span class="cur">$</span><input id="rCost" inputmode="decimal"></div></div>
           <div class="f"><label for="rShip">Flete promedio</label><div class="in"><span class="cur">$</span><input id="rShip" inputmode="decimal"></div><small class="shipHint"></small></div>
         </div>
+        <div class="fields" style="margin-top:16px"><div class="f"><label for="rFulf">Fulfillment u otros costos por pedido</label><div class="in"><span class="cur">$</span><input id="rFulf" inputmode="decimal" placeholder="0"></div><small>Opcional: bodega, empaque, comisión del asesor. Déjalo en 0 si no aplica</small></div></div>
       </div>
     </section>
     <section class="card">
@@ -468,8 +477,8 @@ footer{color:var(--muted);font-size:13.5px;padding:10px 0 36px}
   <section class="card"><div class="card-body">
     <h2 style="font-size:20px;margin-bottom:14px">Tres números para no perder plata</h2>
     <div class="rules">
-      <div><h3>Costo total ≤ 50% del precio</h3><p>Producto más flete nunca deberían superar la mitad de lo que cobras.</p></div>
-      <div><h3>Lo ideal: costo en 40%</h3><p>Así tu margen bruto llega al 60% y tienes espacio para pautar y absorber devoluciones.</p></div>
+      <div><h3>Costo total ≤ 50% del precio</h3><p>Producto, fulfillment y flete nunca deberían superar la mitad de lo que cobras.</p></div>
+      <div><h3>Lo ideal: costo en 40%</h3><p>Así tu margen bruto llega al 60%: 10 puntos son el colchón que paga las devoluciones y te quedas con el 50%.</p></div>
       <div><h3>Pauta ≤ 35% del margen real</h3><p>Lo que gastas en anuncios no debería pasar del 35% de tu margen después de devoluciones.</p></div>
     </div>
   </div></section>
@@ -562,6 +571,10 @@ function productCalc(price,cost,ship){
   const total = cost+ship, unit = price-total, margin = price>0 ? unit/price*100 : 0;
   return { total, unit, margin, pMin: total/0.5, pOpt: total/0.4 };
 }
+function cushionCalc(price,cost,ship){ // colchón = 10% de la venta; cubre r devoluciones si colchón = flete × r ÷ (1 − r)
+  const now=price*0.10, opt=(cost+ship)/0.4*0.10, cov=c=> (c+ship)>0 ? c/(c+ship)*100 : 0;
+  return { now, covNow:cov(now), covOpt:cov(opt), marginAfter: price>0 ? (price-cost-ship-now)/price*100 : 0 };
+}
 function marginStatus(m){
   if(m>=60) return ["s-good","Excelente, tienes buen espacio para pautar"];
   if(m>=50) return ["s-ok","Aceptable, aunque podrías cobrar un poco más"];
@@ -607,16 +620,22 @@ function qtyOffers(price,cost,ship){ // 2 unidades = 1,5× precio · 3 unidades 
 let lastSim=null, lastReal=null;
 
 function calcSim(){
-  const price=num($("sPrice").value), cost=num($("sCost").value), ship=num($("sShip").value);
+  const price=num($("sPrice").value), pcost=num($("sCost").value), fulf=num($("sFulf").value), cost=pcost+fulf, ship=num($("sShip").value); // costo = producto + fulfillment
   const p = productCalc(price,cost,ship);
   const [cls,txt] = marginStatus(p.margin);
   $("mBox").className = "margin-box "+cls;
   $("mPct").textContent = pct(p.margin); $("mStatus").textContent = txt;
   $("mTotal").textContent = money(p.total); $("mUnit").textContent = money(p.unit);
   $("pMin").textContent = money(roundMoney(p.pMin)); $("pOpt").textContent = money(roundMoney(p.pOpt));
+  const cu = cushionCalc(price,cost,ship), rpNow = +$("sReturn").value;
+  const okC = cu.covNow >= rpNow;
+  $("cushion").className = "cushion "+(okC?"ok":"short");
+  $("cushion").innerHTML = `<span class="ck">Colchón del 10% para devoluciones</span>
+    <p>A tu precio actual (${money(price)}), apartar el 10% de cada venta son <b>${money(roundMoney(cu.now))}</b>, que cubren hasta un <b>${pct(cu.covNow)}</b> de devoluciones. Tu margen después del colchón: <b>${pct(cu.marginAfter)}</b>.</p>
+    <p>${okC?`Las devoluciones que estás simulando (${rpNow}%) caben en el colchón.`:`Las devoluciones que estás simulando (${rpNow}%) superan el colchón: sube el precio hacia el recomendado.`} Al precio recomendado (${money(roundMoney(p.pOpt))}) el colchón cubre hasta un <b>${pct(cu.covOpt)}</b>.</p>`;
 
   // ofertas por cantidad
-  const offers = qtyOffers(price,cost,ship);
+  const offers = qtyOffers(price,pcost,ship+fulf); // el pack paga un solo fulfillment y un solo flete
   let oh="";
   offers.forEach(o=>{
     oh += `<div class="tile ${o.q===3?'pick good':'warn'}"><div class="k">${o.q} unidades<span class="badge">${o.q===3?'Mejor precio':'Pack'}</span></div>
@@ -665,15 +684,15 @@ function calcSim(){
     cpaInfo={cpa,spend,op,share,msg};
   }
   $("cpaResult").innerHTML = cr;
-  lastSim = {offers,price,cost,ship,p,status:txt,orders,cp,rp,f,budgets,cpaInfo};
+  lastSim = {offers,price,cost,pcost,fulf,ship,p,status:txt,orders,cp,rp,f,budgets,cpaInfo};
 }
 
 function calcReal(){
-  const price=num($("rPrice").value), cost=num($("rCost").value), ship=num($("rShip").value);
+  const price=num($("rPrice").value), pcost=num($("rCost").value), fulf=num($("rFulf").value), cost=pcost+fulf, ship=num($("rShip").value);
   const spend=num($("rSpend").value), orders=Math.round(num($("rOrders").value)), days=Math.round(num($("rDays").value));
   const cp=+$("rCancel").value, rp=+$("rReturn").value;
   $("rCancelOut").textContent=cp+"%"; $("rReturnOut").textContent=rp+"%";
-  const miss=[]; if(!price)miss.push("Precio de venta"); if(!cost)miss.push("Costo del producto"); if(!ship)miss.push("Flete promedio");
+  const miss=[]; if(!price)miss.push("Precio de venta"); if(!pcost)miss.push("Costo del producto"); if(!ship)miss.push("Flete promedio");
   if(!spend)miss.push("Inversión en pauta"); if(!orders)miss.push("Pedidos totales"); if(!days)miss.push("Días de campaña");
   $("rPending").hidden = !miss.length;
   $("rPending").innerHTML = "<b>Te falta completar:</b> "+miss.map(m=>`<span class="pill">${m}</span>`).join("");
@@ -704,7 +723,7 @@ function calcReal(){
     ["Ventas entregadas",money(f.delivSales),`${f.delivered} de ${orders} pedidos`,"good"]
   ];
   $("rTiles").innerHTML = tiles.map(t=>`<div class="tile ${t[3]}"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]}</div></div>`).join("");
-  lastReal={price,cost,ship,spend,orders,days,cp,rp,p,f,profit,perDay,month,cpaReal,share,roas,cpaMax35,cpaBreak,st,ver};
+  lastReal={price,cost,pcost,fulf,ship,spend,orders,days,cp,rp,p,f,profit,perDay,month,cpaReal,share,roas,cpaMax35,cpaBreak,st,ver};
 }
 
 function calc(){ mode==="sim"?calcSim():calcReal(); }
@@ -734,9 +753,10 @@ function buildPdf(){
   if(mode==="sim"){
     const s=lastSim;
     section("1. Costos del producto");
-    row("Costo del producto",money(s.cost)); row("Flete promedio",money(s.ship)); row("Precio de venta",money(s.price));
+    row("Costo del producto",money(s.pcost)); if(s.fulf>0) row("Fulfillment u otros costos",money(s.fulf)); row("Flete promedio",money(s.ship)); row("Precio de venta",money(s.price));
     row("Costo total",money(s.p.total)); row("Ganancia por unidad",money(s.p.unit),true); row("Margen bruto",pct(s.p.margin),true);
-    row("Precio mínimo (margen 50%)",money(roundMoney(s.p.pMin))); row("Precio recomendado (margen 60%)",money(roundMoney(s.p.pOpt)));
+    row("Precio mínimo (margen 50%, sin colchón)",money(roundMoney(s.p.pMin))); row("Precio recomendado (margen 60%, con colchón 10%)",money(roundMoney(s.p.pOpt)));
+    { const cu=cushionCalc(s.price,s.cost,s.ship); row("Colchón 10% para devoluciones a tu precio",money(roundMoney(cu.now))); row("Devoluciones que cubre el colchón",pct(cu.covNow)); row("Margen después del colchón",pct(cu.marginAfter)); }
     para("Diagnóstico: "+s.status+".");
     s.offers.forEach(o=>{ row(`Oferta ${o.q} unidades`,money(o.price),true); row(`   Precio por unidad (−${o.disc}%)`,money(roundMoney(o.each))); row(`   Margen del pack`,pct(o.margin)); });
     section("2. Simulación de ventas");
@@ -749,7 +769,7 @@ function buildPdf(){
   } else {
     const r=lastReal;
     section("1. Producto");
-    row("Precio de venta",money(r.price)); row("Costo del producto",money(r.cost)); row("Flete promedio",money(r.ship));
+    row("Precio de venta",money(r.price)); row("Costo del producto",money(r.pcost)); if(r.fulf>0) row("Fulfillment u otros costos",money(r.fulf)); row("Flete promedio",money(r.ship));
     row("Margen bruto",pct(r.p.margin),true);
     section("2. Campaña");
     row("Inversión en pauta",money(r.spend)); row("Pedidos totales",r.orders); row("Días de campaña",r.days);
@@ -799,7 +819,7 @@ function setMode(m){
   $("tabSim").setAttribute("aria-selected",m==="sim"); $("tabReal").setAttribute("aria-selected",m==="real");
   $("heroTitle").textContent = m==="sim"?"Antes de pautar, mira si el producto te deja plata":"¿Cuánto te está dejando lo que ya inviertes?";
   $("heroSub").textContent = m==="sim"?"Pon tus costos, simula cancelaciones y devoluciones, y descubre cuánto puedes pagar por pedido en publicidad.":"Mete los datos reales de tu campaña y mira tu utilidad exacta, tu CPA real y hasta dónde puedes escalar.";
-  if(m==="real"){ ["Price","Cost","Ship"].forEach(k=>{ if(!$("r"+k).value) $("r"+k).value=$("s"+k).value; }); }
+  if(m==="real"){ ["Price","Cost","Ship","Fulf"].forEach(k=>{ if(!$("r"+k).value) $("r"+k).value=$("s"+k).value; }); }
   calc();
 }
 function loadCountry(k){
@@ -919,7 +939,7 @@ $("regForm").addEventListener("submit",async e=>{
 buildPlats(); showRegOk(); startGate();
 
 /* ---------- TUTORIAL ---------- */
-const TUT_GROUPS=[["Cómo usarla",0],["La lógica",3],["Recomendaciones",9],["Beneficios",11]];
+const TUT_GROUPS=[["Cómo usarla",0],["La lógica",3],["Recomendaciones",10],["Beneficios",12]];
 function tutSlides(){
   if(!lastSim){ mode="sim"; calcSim(); }
   const s=lastSim, f=s.f, o=s.offers||[], b=s.budgets;
@@ -935,6 +955,7 @@ function tutSlides(){
     <p>Arriba eliges tu <b>país</b> (cambia moneda y formato) y puedes activar el modo oscuro. Al final descargas todo en <b>PDF</b>.</p>`},
   {k:"Cómo usarla",t:"Llena los datos en orden",go:"sCost",h:`
     <ul><li><b>Costo del producto:</b> lo que te cobra el proveedor (por ejemplo, el precio en Dropi).</li>
+    <li><b>Fulfillment u otros costos (opcional):</b> bodega, empaque o comisión del asesor por pedido. Si no tienes, déjalo en 0.</li>
     <li><b>Flete promedio:</b> lo que cuesta enviar un pedido. Usa el promedio de tus transportadoras.</li>
     <li><b>Precio de venta:</b> lo que paga el cliente.</li>
     <li><b>Pedidos por día, % cancelaciones y % devoluciones</b> en el paso 2.</li>
@@ -945,7 +966,7 @@ function tutSlides(){
     <p><b>Mis números reales</b> sirve cuando ya pautaste: pones lo que invertiste, los pedidos que entraron y en cuántos días, y te dice tu utilidad exacta, CPA real, ROAS y proyección a 30 días.</p>
     <div class="tipbox">Si faltan datos en el modo real, la calculadora te muestra cuáles completar antes de dar resultados.</div>`},
   {k:"La lógica",t:"Margen bruto",go:"mBox",h:ex+
-    F("Costo total = costo del producto + flete",`${money(s.cost)} + ${money(s.ship)} = ${money(s.p.total)}`)+
+    F("Costo total = costo del producto + fulfillment + flete",`${money(s.pcost)} + ${money(s.fulf)} + ${money(s.ship)} = ${money(s.p.total)}`)+
     F("Ganancia por unidad = precio − costo total",`${money(s.price)} − ${money(s.p.total)} = ${money(s.p.unit)}`)+
     F("Margen bruto = ganancia por unidad ÷ precio",`${money(s.p.unit)} ÷ ${money(s.price)} = ${pct(s.p.margin)}`)+
     `<ul><li><b>60% o más:</b> excelente.</li><li><b>50% a 60%:</b> aceptable.</li><li><b>40% a 50%:</b> ajustado, sube el precio.</li><li><b>Menos de 40%:</b> riesgoso.</li></ul>`},
@@ -954,6 +975,12 @@ function tutSlides(){
     F("Precio mínimo (margen 50%) = costo total ÷ 0,5",`${money(s.p.total)} ÷ 0,5 = ${money(roundMoney(s.p.pMin))}`)+
     F("Precio recomendado (margen 60%) = costo total ÷ 0,4",`${money(s.p.total)} ÷ 0,4 = ${money(roundMoney(s.p.pOpt))}`)+
     `<p>Si vendes por debajo del mínimo, las devoluciones y la pauta te van a dejar sin margen.</p>`},
+  {k:"La lógica",t:"El colchón del 10% para devoluciones",go:"cushion",h:(()=>{const cu=cushionCalc(s.price,s.cost,s.ship);return `
+    <p>En contra entrega, <b>el precio de los pedidos entregados tiene que pagar los fletes de los devueltos</b>. Por eso se aparta un 10% de cada venta como colchón.</p>`+
+    F("Precio recomendado = costo total ÷ (1 − 10% de colchón − 50% de margen)",`${money(s.p.total)} ÷ 0,40 = ${money(roundMoney(s.p.pOpt))}`)+
+    `<p>Es el mismo precio del margen 60%: los 10 puntos entre 50% y 60% son justo el colchón. No se suma dos veces.</p>`+
+    F("Devoluciones que cubre = colchón ÷ (colchón + flete)",`${money(roundMoney(cu.now))} ÷ (${money(roundMoney(cu.now))} + ${money(s.ship)}) = ${pct(cu.covNow)}`)+
+    `<div class="tipbox">Si tus devoluciones reales pasan de ese porcentaje, el colchón no alcanza: sube el precio o mejora la confirmación de pedidos.</div>`;})()},
   {k:"La lógica",t:"Ofertas por cantidad",go:"offers",h:
     (o[0]?F("Pack de 2 = precio × 1,5, redondeado a precio comercial",`${money(s.price)} × 1,5 → ${money(o[0].price)} (${money(roundMoney(o[0].each))} c/u, −${o[0].disc}%)`):"")+
     (o[1]?F("Pack de 3 = precio × 1,8, redondeado a precio comercial",`${money(s.price)} × 1,8 → ${money(o[1].price)} (${money(roundMoney(o[1].each))} c/u, −${o[1].disc}%)`):"")+
@@ -974,7 +1001,7 @@ function tutSlides(){
     F("Utilidad operacional = margen bruto real − presupuesto",`${money(f.real)} − ${money(roundMoney(b[0].budget))} = ${money(roundMoney(b[0].op))}`)+
     `<p>Con tu <b>CPA actual</b>: inversión = CPA × pedidos, y utilidad = margen real − inversión. En el modo real, CPA real = inversión ÷ pedidos y ROAS = ventas entregadas ÷ inversión.</p>`},
   {k:"Recomendaciones",t:"Antes de lanzar un producto",go:null,h:`
-    <ul><li>Busca que el <b>costo total no pase del 40%</b> del precio. Si no se puede, al menos del 50%.</li>
+    <ul><li>Vende al <b>precio recomendado (60%)</b>: ese 10% extra es el colchón que paga las devoluciones. El mínimo (50%) no deja colchón.</li>
     <li>Usa <b>fletes reales</b> de tu transportadora y ciudad, no el más barato.</li>
     <li>Simula con <b>20% de cancelaciones y 20% de devoluciones</b> si aún no tienes datos. Si el producto solo funciona con 5%, no es rentable.</li>
     <li>Si el margen sale ajustado, prueba primero <b>subir el precio o armar packs</b> antes que bajar la calidad.</li>
